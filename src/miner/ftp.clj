@@ -97,7 +97,7 @@
   "Rename a remote file (must be within a with-ftp"
   (.rename ^FTPClient client ^String from ^String to))
 
-;; convience methods for one-shot results
+;; convenience methods for one-shot results
 
 (defn rename-file [url from to]
   (with-ftp [client url]
