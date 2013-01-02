@@ -38,13 +38,13 @@
          ~@extra-bindings]
      (when ~client
        (try 
-         (if (.getUserInfo u#)
-           (let [[^String uname# ^String pass#] (.split (.getUserInfo u#) ":" 2)]
+         (when-let [user-info# (.getUserInfo u#)]
+           (let [[^String uname# ^String pass#] (.split user-info# ":" 2)]
              (.login ~client uname# pass#)))
          (.changeWorkingDirectory ~client (.getPath u#))
          (.setFileType ~client FTP/BINARY_FILE_TYPE)
          ~@body
-         (catch IOException e# (println "Error:" (.getMessage e#)) nil)
+         (catch IOException e# (println (.getMessage e#)) (throw e#))
          (finally (when (.isConnected ~client)
                     (try 
                       (.disconnect ~client)
