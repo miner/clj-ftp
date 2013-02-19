@@ -7,6 +7,13 @@ clear so someone could sniff packets on your network and discover
 your password.  However, FTP access is useful for dealing with anonymous
 FTP servers and situations where security is not an issue.
 
+## Available on Clojars
+
+https://clojars.org/com.velisco/clj-ftp
+
+Leiningen dependencies:
+
+	[com.velisco/clj-ftp "0.1.4"]
 
 ## Usage
 
@@ -18,6 +25,6 @@ FTP servers and situations where security is not an issue.
 
 ## License
 
-Copyright © 2012 Stephen E. Miner
+Copyright © 2012-13 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.
