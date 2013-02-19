@@ -78,8 +78,15 @@
 (defn client-cd [client dir]
   (.changeWorkingDirectory ^FTPClient client ^String dir))
 
+(defn- strip-double-quotes [s]
+  (let [len (count s)]
+    (cond (<= len 2) s
+          (and (= (.charAt s 0) \")
+               (= (.charAt s (dec len)) \")) (subs s 1 (dec len))
+          :else s)))
+          
 (defn client-pwd [client]
-  (.printWorkingDirectory ^FTPClient client))
+  (strip-double-quotes (.printWorkingDirectory ^FTPClient client)))
 
 (defn client-mkdir [client subdir]
   (.makeDirectory ^FTPClient client ^String subdir))
