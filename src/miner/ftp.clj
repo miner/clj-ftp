@@ -37,16 +37,17 @@
          ^FTPClient ~client (open u#)
          ~@extra-bindings]
      (when ~client
-       (try 
+       (try
          (when-let [user-info# (.getUserInfo u#)]
            (let [[^String uname# ^String pass#] (.split user-info# ":" 2)]
              (.login ~client uname# pass#)))
          (.changeWorkingDirectory ~client (.getPath u#))
          (.setFileType ~client FTP/BINARY_FILE_TYPE)
+         (.enterLocalPassiveMode ~client)
          ~@body
          (catch IOException e# (println (.getMessage e#)) (throw e#))
          (finally (when (.isConnected ~client)
-                    (try 
+                    (try
                       (.disconnect ~client)
                       (catch IOException e2# nil))))))))
 
@@ -63,7 +64,7 @@
 (defn client-get
   "Get a file (must be within a with-ftp)"
   ([client fname] (client-get client fname (fs/base-name fname)))
-  
+
   ([client fname local-name]
       (with-open [outstream (java.io.FileOutputStream. (io/as-file local-name))]
         (.retrieveFile ^FTPClient client ^String fname ^java.io.OutputStream outstream))))
@@ -71,7 +72,7 @@
 (defn client-put
   "Put a file (must be within a with-ftp)"
   ([client fname] (client-put client fname (fs/base-name fname)))
-			   
+
   ([client fname remote] (with-open [instream (java.io.FileInputStream. (io/as-file fname))]
 			   (.storeFile ^FTPClient client ^String remote ^java.io.InputStream instream))))
 
@@ -95,7 +96,7 @@
 (defn client-mkdirs [client subpath]
   (doseq [d (reductions (fn [path item] (str path File/separator item))  (fs/split subpath))]
     (client-mkdir client d)))
-	
+
 (defn client-delete [client fname]
   "Delete a file (must be within a with-ftp)"
   (.deleteFile ^FTPClient client ^String fname))
@@ -127,4 +128,3 @@
 (defn list-directories [url]
   (with-ftp [client url]
     (client-list-directories client)))
-
