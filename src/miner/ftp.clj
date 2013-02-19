@@ -1,8 +1,8 @@
 
 ;; Latest Commons Net Update:
-;; http://commons.apache.org/net/api-3.1/org/apache/commons/net/ftp/FTPClient.html
+;; http://commons.apache.org/net/api-3.2/org/apache/commons/net/ftp/FTPClient.html
 
-;; Uses Apache Commons Net 3.1.  Does not support SFTP.
+;; Uses Apache Commons Net 3.2.  Does not support SFTP.
 
 ;; FTP is considered insecure.  Data and passwords are sent in the
 ;; clear so someone could sniff packets on your network and discover
