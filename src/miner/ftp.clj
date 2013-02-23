@@ -1,12 +1,14 @@
 
 ;; Latest Commons Net Update:
-;; http://commons.apache.org/net/api-3.2/org/apache/commons/net/ftp/FTPClient.html
+;; http://commons.apache.org/net/api-3.1/org/apache/commons/net/ftp/FTPClient.html
 
-;; Uses Apache Commons Net 3.2.  Does not support SFTP.
+;; Uses Apache Commons Net 3.1.  Does not support SFTP.
+;; For some unknown reason Apache Commons Net 3.2 was causing a hang for me when putting files so
+;; we reverted to 3.1 until we can figure out the problem.
 
 ;; FTP is considered insecure.  Data and passwords are sent in the
 ;; clear so someone could sniff packets on your network and discover
-;; your password.  However, FTP access is useful for dealing with anonymous
+;; your password.  Nevertheless, FTP access is useful for dealing with anonymous
 ;; FTP servers and situations where security is not an issue.
 
 (ns miner.ftp
@@ -43,6 +45,7 @@
              (.login ~client uname# pass#)))
          (.changeWorkingDirectory ~client (.getPath u#))
          (.setFileType ~client FTP/BINARY_FILE_TYPE)
+         (.setControlKeepAliveTimeout ~client 300)
          (.enterLocalPassiveMode ~client)
          ~@body
          (catch IOException e# (println (.getMessage e#)) (throw e#))
@@ -53,13 +56,34 @@
 
 
 (defn client-list-all [client]
+  "DEPRECATED use client-all-names"
   (map #(.getName  ^FTPFile %) (.listFiles client)))
 
 (defn client-list-files [client]
+  "DEPRECATED use client-file-names"
   (map #(.getName ^FTPFile %) (filter #(.isFile ^FTPFile %) (.listFiles client))))
 
 (defn client-list-directories [client]
+  "DEPRECATED use client-directory-names"
   (map #(.getName ^FTPFile %) (filter #(.isDirectory ^FTPFile %) (.listFiles client))))
+
+(defn client-FTPFiles-all [client]
+  (vec (.listFiles client)))
+
+(defn client-FTPFiles [client] 
+  (filterv (fn [f] (and f (.isFile ^FTPFile f))) (.listFiles client)))
+
+(defn client-FTPFile-directories [client]
+  (vec (.listDirectories client)))
+
+(defn client-all-names [client] 
+  (vec (.listNames client)))
+     
+(defn client-file-names [client] 
+  (mapv #(.getName ^FTPFile %) (client-FTPFiles client)))
+
+(defn client-directory-names [client] 
+  (mapv #(.getName ^FTPFile %) (client-FTPFile-directories client)))
 
 (defn client-get
   "Get a file (must be within a with-ftp)"
@@ -119,12 +143,12 @@
 
 (defn list-all [url]
   (with-ftp [client url]
-    (client-list-all url)))
+    (seq (client-all-names url))))
 
 (defn list-files [url]
   (with-ftp [client url]
-    (client-list-files client)))
+    (seq (client-file-names client))))
 
 (defn list-directories [url]
   (with-ftp [client url]
-    (client-list-directories client)))
+    (seq (client-directory-names client))))
