@@ -26,6 +26,11 @@
     (when (fs/exists? tmp)
       (fs/delete tmp)))))
 
+(deftest get-stream-client
+  (let [tmp (fs/temp-file "ftp-")]
+    (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
+      (is (instance? java.io.InputStream
+                     (client-get-stream client "README.olderversions"))))))
 
 (deftest get-filenames
   (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
