@@ -86,12 +86,17 @@
   (mapv #(.getName ^FTPFile %) (client-FTPFile-directories client)))
 
 (defn client-get
-  "Get a file (must be within a with-ftp)"
+  "Get a file and write to local file-system (must be within a with-ftp)"
   ([client fname] (client-get client fname (fs/base-name fname)))
 
   ([client fname local-name]
       (with-open [outstream (java.io.FileOutputStream. (io/as-file local-name))]
         (.retrieveFile ^FTPClient client ^String fname ^java.io.OutputStream outstream))))
+
+(defn client-get-stream
+  "Get a file and return InputStream (must be within a with-ftp)"
+  [client fname]
+  (.retrieveFileStream ^FTPClient client ^String fname))
 
 (defn client-put
   "Put a file (must be within a with-ftp)"
