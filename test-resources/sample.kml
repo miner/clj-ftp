@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Placemark>
+    <name>Everest</name>
+    <description>8.848m/20.209ft high.</description>
+    <Point>
+      <coordinates>27.988232096332762,86.92526578903198</coordinates>
+    </Point>
+  </Placemark>

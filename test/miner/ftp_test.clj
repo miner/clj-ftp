@@ -1,7 +1,8 @@
 (ns miner.ftp-test
   (:use clojure.test
         miner.ftp)
-  (:require [fs.core :as fs]))
+  (:require [fs.core :as fs]
+            [clojure.java.io :as io]))
 
 (deftest listing
   (is (pos? (count (list-files "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs")))))
@@ -55,3 +56,17 @@
     (print-FTPFiles-list "dirs only" (client-FTPFile-directories client))
     (print-FTPFiles-list "all" (client-FTPFiles-all client)))
 )
+
+;; Writable FTP server usage: http://www.swfwmd.state.fl.us/data/ftp/
+(deftest write-file
+  (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"]
+    (let [source (.getFile (io/resource "sample.kml"))]
+      ;;(println "write-file source = " (when source (.getFile source)))
+      (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
+
+;; Writable FTP server usage: http://cs.brown.edu/system/ftp.html
+(deftest write-file2
+  (with-ftp [client "ftp://anonymous:brown%40mailinator.com@ftp.cs.brown.edu/incoming"]
+    (let [source (.getFile (io/resource "sample.kml"))]
+      ;;(println "write-file source = " (when source (.getFile source)))
+      (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
