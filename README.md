@@ -13,13 +13,21 @@ https://clojars.org/com.velisco/clj-ftp
 
 Leiningen dependencies:
 
-	[com.velisco/clj-ftp "0.1.6"]
+	[com.velisco/clj-ftp "0.1.7"]
 
 ## Usage
 
     (require '[miner.ftp :as ftp])
 
     (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub"]
+		(ftp/client-get client "interesting.txt" "stuff.txt"))
+		
+By default, we use a passive local data connection.  You can override that by passing an option
+after the URL.  Use :local-data-connection-mode :active if you don't want passive mode.  For
+example:
+
+    (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub" 
+	               :local-data-connection-mode :active]
 		(ftp/client-get client "interesting.txt" "stuff.txt"))
 		
 
