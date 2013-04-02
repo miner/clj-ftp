@@ -34,10 +34,9 @@
             nil)
         client))))
 
-(defmacro with-ftp [[client url & extra-bindings] & body]
+(defmacro with-ftp [[client url] & body]
   `(let [u# (io/as-url ~url)
-         ^FTPClient ~client (open u#)
-         ~@extra-bindings]
+         ^FTPClient ~client (open u#)]
      (when ~client
        (try
          (when-let [user-info# (.getUserInfo u#)]
