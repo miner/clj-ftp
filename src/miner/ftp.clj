@@ -21,6 +21,7 @@
 (defn open [url]
   (let [^FTPClient client (FTPClient.)
         ^URL url (io/as-url url)]
+    (.enterLocalPassiveMode client)
     (.connect client
               (.getHost url)
               (if (= -1 (.getPort url))
@@ -46,7 +47,6 @@
          (.changeWorkingDirectory ~client (.getPath u#))
          (.setFileType ~client FTP/BINARY_FILE_TYPE)
          (.setControlKeepAliveTimeout ~client 300)
-         (.enterLocalPassiveMode ~client)
          ~@body
          (catch IOException e# (println (.getMessage e#)) (throw e#))
          (finally (when (.isConnected ~client)
