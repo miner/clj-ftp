@@ -1,6 +1,6 @@
 
-;; Latest Commons Net Update:
-;; http://commons.apache.org/net/api-3.1/org/apache/commons/net/ftp/FTPClient.html
+;; Apache Commons Net API:
+;; http://commons.apache.org/proper/commons-net/javadocs/api-3.1/index.html
 
 ;; Uses Apache Commons Net 3.1.  Does not support SFTP.
 ;; For some unknown reason Apache Commons Net 3.2 was causing a hang for me when putting files so
