@@ -1,6 +1,6 @@
 
-;; Latest Commons Net Update:
-;; http://commons.apache.org/net/api-3.1/org/apache/commons/net/ftp/FTPClient.html
+;; Apache Commons Net API:
+;; http://commons.apache.org/proper/commons-net/javadocs/api-3.1/index.html
 
 ;; Uses Apache Commons Net 3.1.  Does not support SFTP.
 ;; For some unknown reason Apache Commons Net 3.2 was causing a hang for me when putting files so
@@ -34,8 +34,14 @@
             nil)
         client))))
 
-(defmacro with-ftp [[client url] & body]
-  `(let [u# (io/as-url ~url)
+(defmacro with-ftp 
+  "Establish an FTP connection, bound to client, for the FTP url, and execute the body with
+   access to that client connection.  Closes connection at end of body.  Keyword
+   options can follow the url in the binding vector.  By default, uses a passive local data
+   connection mode.  Use [client url :local-data-connection-mode :active] to override."
+  [[client url & {:keys [local-data-connection-mode]}] & body]
+  `(let [local-mode# ~local-data-connection-mode
+         u# (io/as-url ~url)
          ^FTPClient ~client (open u#)]
      (when ~client
        (try
@@ -45,7 +51,10 @@
          (.changeWorkingDirectory ~client (.getPath u#))
          (.setFileType ~client FTP/BINARY_FILE_TYPE)
          (.setControlKeepAliveTimeout ~client 300)
-         (.enterLocalPassiveMode ~client)
+         ;; by default (when nil) use passive mode 
+         (if (= local-mode# :active)
+           (.enterLocalActiveMode ~client)
+           (.enterLocalPassiveMode ~client))
          ~@body
          (catch IOException e# (println (.getMessage e#)) (throw e#))
          (finally (when (.isConnected ~client)
