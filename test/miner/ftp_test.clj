@@ -14,18 +14,28 @@
     (when (fs/exists? tmp)
       (fs/delete tmp))))
 
+(defn get-file-guts [client tmpfile]
+  (client-cd client "..")
+  (is (.endsWith (client-pwd client) "gnu"))
+  (is (pos? (count (client-all-names client))))
+  (client-cd client "emacs")
+  (is (.endsWith (client-pwd client) "emacs"))
+  (client-get client "README.otherversions" tmpfile)
+  (is (fs/exists? tmpfile)))
+
 (deftest get-file-client
-  (let [tmp (fs/temp-file "ftp-")]
-    (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
-      (client-cd client "..")
-      (is (.endsWith (client-pwd client) "gnu"))
-      (is (pos? (count (client-all-names client))))
-      (client-cd client "emacs")
-      (is (.endsWith (client-pwd client) "emacs"))
-      (client-get client "README.otherversions" tmp))
-    (is (fs/exists? tmp)
+  (let [tmp (fs/temp-file "ftp-")
+        tmp2 (fs/temp-file "ftp-")
+        url "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
+    (with-ftp [client url]
+      (get-file-guts client tmp))
+    (with-ftp [client2 url :local-data-connection-mode :active]
+      (get-file-guts client2 tmp2))
+    (is (fs/size tmp) (fs/size tmp2))
     (when (fs/exists? tmp)
-      (fs/delete tmp)))))
+      (fs/delete tmp))
+    (when (fs/exists? tmp2)
+      (fs/delete tmp2))))
 
 (deftest get-stream-client
   (let [tmp (fs/temp-file "ftp-")]

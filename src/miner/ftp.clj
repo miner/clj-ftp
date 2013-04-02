@@ -34,10 +34,15 @@
             nil)
         client))))
 
-(defmacro with-ftp [[client url & extra-bindings] & body]
-  `(let [u# (io/as-url ~url)
-         ^FTPClient ~client (open u#)
-         ~@extra-bindings]
+(defmacro with-ftp 
+  "Establish an FTP connection, bound to client, for the FTP url, and execute the body with
+   access to that client connection.  Closes connection at end of body.  Keyword
+   options can follow the url in the binding vector.  By default, uses a passive local data
+   connection mode.  Use [client url :local-data-connection-mode :active] to override."
+  [[client url & {:keys [local-data-connection-mode]}] & body]
+  `(let [local-mode# ~local-data-connection-mode
+         u# (io/as-url ~url)
+         ^FTPClient ~client (open u#)]
      (when ~client
        (try
          (when-let [user-info# (.getUserInfo u#)]
@@ -46,7 +51,10 @@
          (.changeWorkingDirectory ~client (.getPath u#))
          (.setFileType ~client FTP/BINARY_FILE_TYPE)
          (.setControlKeepAliveTimeout ~client 300)
-         (.enterLocalPassiveMode ~client)
+         ;; by default (when nil) use passive mode 
+         (if (= local-mode# :active)
+           (.enterLocalActiveMode ~client)
+           (.enterLocalPassiveMode ~client))
          ~@body
          (catch IOException e# (println (.getMessage e#)) (throw e#))
          (finally (when (.isConnected ~client)
