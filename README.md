@@ -13,7 +13,9 @@ https://clojars.org/com.velisco/clj-ftp
 
 Leiningen dependencies:
 
-	[com.velisco/clj-ftp "0.1.7"]
+	[com.velisco/clj-ftp "0.1.8"]
+	
+Double check on Clojars in case I forget to update the version number in this document.
 
 ## Usage
 

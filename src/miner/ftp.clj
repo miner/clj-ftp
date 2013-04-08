@@ -13,7 +13,7 @@
 
 (ns miner.ftp
   (:import (org.apache.commons.net.ftp FTP FTPClient FTPFile FTPReply)
-           (java.net URL)
+           (java.net URL URLDecoder)
            (java.io File IOException))
   (:require [fs.core :as fs]
 	    [clojure.java.io :as io]))
@@ -34,6 +34,11 @@
             nil)
         client))))
 
+(defn decode [url-encoded]
+  (if-not url-encoded
+    ""
+    (URLDecoder/decode url-encoded "UTF-8")))
+
 (defmacro with-ftp 
   "Establish an FTP connection, bound to client, for the FTP url, and execute the body with
    access to that client connection.  Closes connection at end of body.  Keyword
@@ -47,7 +52,7 @@
        (try
          (when-let [user-info# (.getUserInfo u#)]
            (let [[^String uname# ^String pass#] (.split user-info# ":" 2)]
-             (.login ~client uname# pass#)))
+             (.login ~client (decode uname#) (decode pass#))))
          (.changeWorkingDirectory ~client (.getPath u#))
          (.setFileType ~client FTP/BINARY_FILE_TYPE)
          (.setControlKeepAliveTimeout ~client 300)
