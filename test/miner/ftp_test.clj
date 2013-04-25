@@ -43,6 +43,18 @@
       (is (instance? java.io.InputStream
                      (client-get-stream client "README.olderversions"))))))
 
+(deftest get-stream-client-two-files
+  (let [tmp (fs/temp-file "ftp-")]
+    (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
+      (with-open [s1 (client-get-stream client "README.olderversions")]
+        (is (instance? java.io.InputStream s1))
+        (io/copy s1 tmp)
+        (client-complete-pending-command client))
+      (with-open [s2 (client-get-stream client "README.olderversions")]
+        (is (instance? java.io.InputStream s2))
+        (io/copy s2 tmp)
+        (client-complete-pending-command client)))))
+
 (deftest get-filenames
   (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
     (is (client-file-names client) (client-list-files client))))
