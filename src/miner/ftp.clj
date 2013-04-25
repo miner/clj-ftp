@@ -98,6 +98,16 @@
 (defn client-directory-names [client] 
   (mapv #(.getName ^FTPFile %) (client-FTPFile-directories client)))
 
+(defn client-complete-pending-command
+  "Complete the previous command and check the reply code. Throw an expection if
+   reply code is not a positive completion"
+   [client]
+  (.completePendingCommand ^FTPClient client)
+  (let [reply-code (.getReplyCode client)]
+     (when-not (FTPReply/isPositiveCompletion reply-code)
+       (throw (ex-info "Not a Positive completion of last command" {:reply-code reply-code
+                                                                    :reply-string (.getReplyString client)})))))
+
 (defn client-get
   "Get a file and write to local file-system (must be within a with-ftp)"
   ([client fname] (client-get client fname (fs/base-name fname)))
@@ -107,7 +117,8 @@
         (.retrieveFile ^FTPClient client ^String fname ^java.io.OutputStream outstream))))
 
 (defn client-get-stream
-  "Get a file and return InputStream (must be within a with-ftp)"
+  "Get a file and return InputStream (must be within a with-ftp). Note that it's necessary to complete
+   this command with a call to `client-complete-pending-command` after using the stream."
   [client fname]
   (.retrieveFileStream ^FTPClient client ^String fname))
 
