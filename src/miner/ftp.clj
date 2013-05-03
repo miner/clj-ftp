@@ -49,7 +49,6 @@
          u# (io/as-url ~url)
          ^FTPClient ~client (open u#)
          mode# ~transfer-mode ]
-     
      (when ~client
        (try
          (when-let [user-info# (.getUserInfo u#)]
@@ -70,9 +69,6 @@
                     (try
                       (.disconnect ~client)
                       (catch IOException e2# nil))))))))
-
-
-
 
 (defn client-list-all [client]
   "DEPRECATED use client-all-names"
@@ -165,7 +161,7 @@
   (.rename ^FTPClient client ^String from ^String to))
   
   
-(defn client-sendSiteCommand [client sitecmd ] 
+(defn client-send-site-command [client sitecmd ] 
    "Send Site Command must be within with-ftp"
    (.sendSiteCommand ^FTPClient client ^String  sitecmd))
 
