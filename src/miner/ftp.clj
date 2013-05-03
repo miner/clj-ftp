@@ -1,4 +1,3 @@
-
 ;; Apache Commons Net API:
 ;; http://commons.apache.org/proper/commons-net/javadocs/api-3.1/index.html
 
@@ -157,6 +156,11 @@
 (defn client-rename [client from to]
   "Rename a remote file (must be within a with-ftp"
   (.rename ^FTPClient client ^String from ^String to))
+  
+  
+(defn client-sendSiteCommand [client sitecmd ] 
+   "Send Site Command must be within with-ftp"
+   (.sendSiteCommand ^FTPClient client ^String  sitecmd))
 
 ;; convenience methods for one-shot results
 
