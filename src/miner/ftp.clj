@@ -42,18 +42,23 @@
   "Establish an FTP connection, bound to client, for the FTP url, and execute the body with
    access to that client connection.  Closes connection at end of body.  Keyword
    options can follow the url in the binding vector.  By default, uses a passive local data
-   connection mode.  Use [client url :local-data-connection-mode :active] to override."
-  [[client url & {:keys [local-data-connection-mode]}] & body]
+   connection mode and  ascii  transfer mode.  
+   Use [client url :local-data-connection-mode :active :transfer-mode :binary] to override."
+  [[client url & {:keys [local-data-connection-mode transfer-mode]}] & body]
   `(let [local-mode# ~local-data-connection-mode
          u# (io/as-url ~url)
-         ^FTPClient ~client (open u#)]
+         ^FTPClient ~client (open u#)
+         mode# ~transfer-mode ]
+     
      (when ~client
        (try
          (when-let [user-info# (.getUserInfo u#)]
            (let [[^String uname# ^String pass#] (.split user-info# ":" 2)]
              (.login ~client (decode uname#) (decode pass#))))
          (.changeWorkingDirectory ~client (.getPath u#))
-         (.setFileType ~client FTP/BINARY_FILE_TYPE)
+         (if (= mode# :binary)
+           (.setFileType ~client FTP/BINARY_FILE_TYPE)
+           (.setFileType ~client FTP/ASCII_FILE_TYPE))         
          (.setControlKeepAliveTimeout ~client 300)
          ;; by default (when nil) use passive mode 
          (if (= local-mode# :active)
@@ -65,6 +70,8 @@
                     (try
                       (.disconnect ~client)
                       (catch IOException e2# nil))))))))
+
+
 
 
 (defn client-list-all [client]
