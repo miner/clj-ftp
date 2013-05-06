@@ -14,7 +14,8 @@
   (:import (org.apache.commons.net.ftp FTP FTPClient FTPFile FTPReply)
            (java.net URL URLDecoder)
            (java.io File IOException))
-  (:require [fs.core :as fs]
+  (:require [me.raynes.fs :as fs]
+            [clojure.string :as str]
 	    [clojure.java.io :as io]))
 
 (defn open [url]
@@ -38,26 +39,42 @@
     ""
     (URLDecoder/decode url-encoded "UTF-8")))
 
+(defn guess-file-type [file-name]
+  "Best guess about the file type to use when transferring a given file based on the extension.
+  Returns either :binary or :ascii (the default).  If you don't know what you're dealing with,
+  this might help, but don't bet the server farm on it.  See also `client-set-file-type`."
+  (case (str/lower-case (fs/extension file-name))
+    (".jpg" ".jpeg" ".zip" ".mov" ".bin" ".exe" ".pdf" ".gz" ".tar" ".dmg" ".jar" ".tgz" ".war"
+     ".lz" ".mp3" ".mp4" ".sit" ".z" ".dat" ".o" ".app" ".png" ".gif" ".class" ".avi" ".m4v" 
+     ".mpg" ".mpeg" ".swf" ".wmv" ".ogg") :binary
+     :ascii))
+
+(defn client-set-file-type [^FTPClient client filetype]
+  "Set the file type for transfers to either :binary or :ascii (the default)"
+  (if (= filetype :binary)
+    (.setFileType client FTP/BINARY_FILE_TYPE)
+    (.setFileType client FTP/ASCII_FILE_TYPE))
+  filetype)
+
+
 (defmacro with-ftp 
   "Establish an FTP connection, bound to client, for the FTP url, and execute the body with
    access to that client connection.  Closes connection at end of body.  Keyword
    options can follow the url in the binding vector.  By default, uses a passive local data
-   connection mode and  ascii  transfer mode.  
-   Use [client url :local-data-connection-mode :active :transfer-mode :binary] to override."
-  [[client url & {:keys [local-data-connection-mode transfer-mode]}] & body]
+   connection mode and  ASCII file type.  
+   Use [client url :local-data-connection-mode :active :file-type :binary] to override."
+  [[client url & {:keys [local-data-connection-mode file-type]}] & body]
   `(let [local-mode# ~local-data-connection-mode
          u# (io/as-url ~url)
          ^FTPClient ~client (open u#)
-         mode# ~transfer-mode ]
+         file-type# ~file-type]
      (when ~client
        (try
          (when-let [user-info# (.getUserInfo u#)]
            (let [[^String uname# ^String pass#] (.split user-info# ":" 2)]
              (.login ~client (decode uname#) (decode pass#))))
          (.changeWorkingDirectory ~client (.getPath u#))
-         (if (= mode# :binary)
-           (.setFileType ~client FTP/BINARY_FILE_TYPE)
-           (.setFileType ~client FTP/ASCII_FILE_TYPE))         
+         (client-set-file-type ~client file-type#)
          (.setControlKeepAliveTimeout ~client 300)
          ;; by default (when nil) use passive mode 
          (if (= local-mode# :active)

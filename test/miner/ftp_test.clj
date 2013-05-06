@@ -1,7 +1,7 @@
 (ns miner.ftp-test
   (:use clojure.test
         miner.ftp)
-  (:require [fs.core :as fs]
+  (:require [me.raynes.fs :as fs]
             [clojure.java.io :as io]))
 
 (deftest listing
@@ -87,8 +87,26 @@
       (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
 
 ;; Writable FTP server usage: http://cs.brown.edu/system/ftp.html
+;; OK to upload to incoming, but can't download from there.
 (deftest write-file2
   (with-ftp [client "ftp://anonymous:brown%40mailinator.com@ftp.cs.brown.edu/incoming"]
     (let [source (.getFile (io/resource "sample.kml"))]
       ;;(println "write-file source = " (when source (.getFile source)))
       (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
+
+
+(deftest write-file-binary
+  (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"]
+    (let [source (.getFile (io/resource "spacer.jpg"))
+          dest (str "sp" (System/currentTimeMillis) ".jpg")
+          tmp (fs/temp-file "spacer")
+          guess (client-set-file-type client (guess-file-type source))]
+      (is (= guess :binary))
+      ;;(println "write-file source = " (when source (.getFile source)))
+      (client-put client source dest) 
+      (client-get client dest tmp)
+      ;; need a better test to find corruption that can result from wrong file type
+      (is (= (fs/size source) (fs/size tmp)))
+      (fs/delete tmp))))
+
+    
