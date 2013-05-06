@@ -13,7 +13,7 @@ https://clojars.org/com.velisco/clj-ftp
 
 Leiningen dependencies:
 
-	[com.velisco/clj-ftp "0.1.9"]
+	[com.velisco/clj-ftp "0.2.0"]
 	
 Double check on Clojars in case I forget to update the version number in this document.
 
@@ -31,7 +31,9 @@ example:
     (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub" 
 	               :local-data-connection-mode :active]
 		(ftp/client-get client "interesting.txt" "stuff.txt"))
-		
+
+The default file-type for transfers is :ascii, but you can change it with the option `:file-type
+:binary` in `with-ftp`.  Use `client-set-file-type` to set it appropriately before each transfer.
 
 ## License
 
