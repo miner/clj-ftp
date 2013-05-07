@@ -2,6 +2,7 @@
   (:use clojure.test
         miner.ftp)
   (:require [me.raynes.fs :as fs]
+            [digest :as dig]
             [clojure.java.io :as io]))
 
 (deftest listing
@@ -94,19 +95,25 @@
       ;;(println "write-file source = " (when source (.getFile source)))
       (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
 
+(defn sha1 [file-or-url]
+  (let [file (io/as-file file-or-url)]
+    (if (fs/readable? file)
+      (dig/sha-1 file)
+      (throw (ex-info (str "Unreadable file " (pr-str file-or-url)) {:file file-or-url})))))
 
 (deftest write-file-binary
-  (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"]
-    (let [source (.getFile (io/resource "spacer.jpg"))
+  (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"
+             :file-type :binary]
+    (let [source (io/resource "spacer.jpg")
           dest (str "sp" (System/currentTimeMillis) ".jpg")
           tmp (fs/temp-file "spacer")
-          guess (client-set-file-type client (guess-file-type source))]
+          guess (guess-file-type source)]
       (is (= guess :binary))
+      (client-set-file-type client guess)
       ;;(println "write-file source = " (when source (.getFile source)))
       (client-put client source dest) 
       (client-get client dest tmp)
-      ;; need a better test to find corruption that can result from wrong file type
       (is (= (fs/size source) (fs/size tmp)))
+      ;; test for file corruption that can result from wrong file type
+      (is (= (sha1 source) (sha1 tmp)))
       (fs/delete tmp))))
-
-    
