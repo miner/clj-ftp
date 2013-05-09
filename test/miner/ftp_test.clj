@@ -56,10 +56,6 @@
         (io/copy s2 tmp)
         (client-complete-pending-command client)))))
 
-(deftest get-filenames
-  (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
-    (is (client-file-names client) (client-list-files client))))
-
 (deftest get-all
   (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu"]
     (is (mapv #(.getName %) (client-FTPFiles client)) (client-all-names client))))
