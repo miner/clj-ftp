@@ -66,12 +66,12 @@
   [[client url & {:keys [local-data-connection-mode file-type]}] & body]
   `(let [local-mode# ~local-data-connection-mode
          u# (io/as-url ~url)
-         ^FTPClient ~client (open u#)
+         ~client ^FTPClient (open u#)
          file-type# ~file-type]
      (when ~client
        (try
          (when-let [user-info# (.getUserInfo u#)]
-           (let [[^String uname# ^String pass#] (.split user-info# ":" 2)]
+           (let [[uname# pass#] (.split user-info# ":" 2)]
              (.login ~client (decode uname#) (decode pass#))))
          (.changeWorkingDirectory ~client (.getPath u#))
          (client-set-file-type ~client file-type#)
@@ -88,29 +88,29 @@
                       (catch IOException e2# nil))))))))
 
 
-(defn client-FTPFiles-all [client]
+(defn client-FTPFiles-all [^FTPClient client]
   (vec (.listFiles client)))
 
-(defn client-FTPFiles [client] 
+(defn client-FTPFiles [^FTPClient client] 
   (filterv (fn [f] (and f (.isFile ^FTPFile f))) (.listFiles client)))
 
-(defn client-FTPFile-directories [client]
+(defn client-FTPFile-directories [^FTPClient client]
   (vec (.listDirectories client)))
 
-(defn client-all-names [client] 
+(defn client-all-names [^FTPClient client] 
   (vec (.listNames client)))
      
-(defn client-file-names [client] 
+(defn client-file-names [^FTPClient client] 
   (mapv #(.getName ^FTPFile %) (client-FTPFiles client)))
 
-(defn client-directory-names [client] 
+(defn client-directory-names [^FTPClient client] 
   (mapv #(.getName ^FTPFile %) (client-FTPFile-directories client)))
 
 (defn client-complete-pending-command
   "Complete the previous command and check the reply code. Throw an expection if
    reply code is not a positive completion"
-   [client]
-  (.completePendingCommand ^FTPClient client)
+   [^FTPClient client]
+  (.completePendingCommand client)
   (let [reply-code (.getReplyCode client)]
      (when-not (FTPReply/isPositiveCompletion reply-code)
        (throw (ex-info "Not a Positive completion of last command" {:reply-code reply-code
@@ -140,7 +140,7 @@
 (defn client-cd [client dir]
   (.changeWorkingDirectory ^FTPClient client ^String dir))
 
-(defn- strip-double-quotes [s]
+(defn- strip-double-quotes [^String s]
   (let [len (count s)]
     (cond (<= len 2) s
           (and (= (.charAt s 0) \")
