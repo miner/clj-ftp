@@ -87,17 +87,6 @@
                       (.disconnect ~client)
                       (catch IOException e2# nil))))))))
 
-(defn client-list-all [client]
-  "DEPRECATED use client-all-names"
-  (map #(.getName  ^FTPFile %) (.listFiles client)))
-
-(defn client-list-files [client]
-  "DEPRECATED use client-file-names"
-  (map #(.getName ^FTPFile %) (filter #(.isFile ^FTPFile %) (.listFiles client))))
-
-(defn client-list-directories [client]
-  "DEPRECATED use client-directory-names"
-  (map #(.getName ^FTPFile %) (filter #(.isDirectory ^FTPFile %) (.listFiles client))))
 
 (defn client-FTPFiles-all [client]
   (vec (.listFiles client)))
