@@ -185,7 +185,7 @@
 
 (defn list-all [url]
   (with-ftp [client url]
-    (seq (client-all-names url))))
+    (seq (client-all-names client))))
 
 (defn list-files [url]
   (with-ftp [client url]
