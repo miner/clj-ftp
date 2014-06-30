@@ -77,7 +77,8 @@
 )
 
 ;; Writable FTP server usage: http://www.swfwmd.state.fl.us/data/ftp/
-(deftest write-file
+;; Server is down so tests have to be disabled
+#_ (deftest write-file
   (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"]
     (let [source (.getFile (io/resource "sample.kml"))]
       ;;(println "write-file source = " (when source (.getFile source)))
@@ -97,7 +98,7 @@
       (dig/sha-1 file)
       (throw (ex-info (str "Unreadable file " (pr-str file-or-url)) {:file file-or-url})))))
 
-(deftest write-file-binary
+#_ (deftest write-file-binary
   (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"
              :file-type :binary]
     (let [source (io/resource "spacer.jpg")
@@ -113,3 +114,10 @@
       ;; test for file corruption that can result from wrong file type
       (is (= (sha1 source) (sha1 tmp)))
       (fs/delete tmp))))
+
+
+;; ftp://ftp4.us.freebsd.org/pub/FreeBSD/ works for read-only
+
+;; Another possibility: http://user.agu.org/ishelp/ftp.html
+;; ftp://ftp.agu.org/incoming/test/
+;; pub is the only readable dir but you have to know full filename
