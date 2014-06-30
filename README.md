@@ -13,7 +13,7 @@ https://clojars.org/com.velisco/clj-ftp
 
 Leiningen dependencies:
 
-	[com.velisco/clj-ftp "0.3.0"]
+	[com.velisco/clj-ftp "0.3.1"]
 	
 Double check on Clojars in case I forget to update the version number in this document.
 
@@ -37,6 +37,6 @@ The default file-type for transfers is :ascii, but you can change it with the op
 
 ## License
 
-Copyright © 2012-13 Stephen E. Miner
+Copyright © 2012-14 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.
