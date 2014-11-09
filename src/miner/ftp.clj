@@ -45,7 +45,7 @@
   this might help, but don't bet the server farm on it.  See also `client-set-file-type`."
   (case (str/lower-case (fs/extension file-name))
     (".jpg" ".jpeg" ".zip" ".mov" ".bin" ".exe" ".pdf" ".gz" ".tar" ".dmg" ".jar" ".tgz" ".war"
-     ".lz" ".mp3" ".mp4" ".sit" ".z" ".dat" ".o" ".app" ".png" ".gif" ".class" ".avi" ".m4v" 
+     ".lz" ".mp3" ".mp4" ".sit" ".z" ".dat" ".o" ".app" ".png" ".gif" ".class" ".avi" ".m4v"
      ".mpg" ".mpeg" ".swf" ".wmv" ".ogg") :binary
      :ascii))
 
@@ -57,11 +57,11 @@
   filetype)
 
 
-(defmacro with-ftp 
+(defmacro with-ftp
   "Establish an FTP connection, bound to client, for the FTP url, and execute the body with
    access to that client connection.  Closes connection at end of body.  Keyword
    options can follow the url in the binding vector.  By default, uses a passive local data
-   connection mode and  ASCII file type.  
+   connection mode and  ASCII file type.
    Use [client url :local-data-connection-mode :active :file-type :binary] to override."
   [[client url & {:keys [local-data-connection-mode file-type]}] & body]
   `(let [local-mode# ~local-data-connection-mode
@@ -76,7 +76,7 @@
          (.changeWorkingDirectory ~client (.getPath u#))
          (client-set-file-type ~client file-type#)
          (.setControlKeepAliveTimeout ~client 300)
-         ;; by default (when nil) use passive mode 
+         ;; by default (when nil) use passive mode
          (if (= local-mode# :active)
            (.enterLocalActiveMode ~client)
            (.enterLocalPassiveMode ~client))
@@ -91,19 +91,19 @@
 (defn client-FTPFiles-all [^FTPClient client]
   (vec (.listFiles client)))
 
-(defn client-FTPFiles [^FTPClient client] 
+(defn client-FTPFiles [^FTPClient client]
   (filterv (fn [f] (and f (.isFile ^FTPFile f))) (.listFiles client)))
 
 (defn client-FTPFile-directories [^FTPClient client]
   (vec (.listDirectories client)))
 
-(defn client-all-names [^FTPClient client] 
+(defn client-all-names [^FTPClient client]
   (vec (.listNames client)))
-     
-(defn client-file-names [^FTPClient client] 
+
+(defn client-file-names [^FTPClient client]
   (mapv #(.getName ^FTPFile %) (client-FTPFiles client)))
 
-(defn client-directory-names [^FTPClient client] 
+(defn client-directory-names [^FTPClient client]
   (mapv #(.getName ^FTPFile %) (client-FTPFile-directories client)))
 
 (defn client-complete-pending-command
@@ -146,7 +146,7 @@
           (and (= (.charAt s 0) \")
                (= (.charAt s (dec len)) \")) (subs s 1 (dec len))
           :else s)))
-          
+
 (defn client-pwd [client]
   (strip-double-quotes (.printWorkingDirectory ^FTPClient client)))
 
@@ -165,9 +165,9 @@
 (defn client-rename [client from to]
   "Rename a remote file (must be within a with-ftp"
   (.rename ^FTPClient client ^String from ^String to))
-  
-  
-(defn client-send-site-command [client sitecmd ] 
+
+
+(defn client-send-site-command [client sitecmd ]
    "Send Site Command must be within with-ftp"
    (.sendSiteCommand ^FTPClient client ^String  sitecmd))
 
