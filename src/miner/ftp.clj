@@ -62,8 +62,21 @@
    access to that client connection.  Closes connection at end of body.  Keyword
    options can follow the url in the binding vector.  By default, uses a passive local data
    connection mode and  ASCII file type.
-   Use [client url :local-data-connection-mode :active :file-type :binary] to override."
-  [[client url & {:keys [local-data-connection-mode file-type]}] & body]
+   Use [client url :local-data-connection-mode :active :file-type :binary] to override.
+
+   Allows to override the following timeouts:
+     - `data-timeout-ms` - the underlying socket timeout. Default - infinite (< 1).
+     - `control-keep-alive-timeout-sec` - control channel keep alive message
+       timeout. Default 300 seconds.
+     - `control-keep-alive-reply-timeout-ms` - how long to wait for the control
+       channel keep alive replies. Default 1000 ms."
+  [[client url & {:keys [local-data-connection-mode file-type
+                         data-timeout-ms
+                         control-keep-alive-timeout-sec
+                         control-keep-alive-reply-timeout-ms]
+                  :or {data-timeout-ms -1
+                       control-keep-alive-timeout-sec 300
+                       control-keep-alive-reply-timeout-ms 1000}}] & body]
   `(let [local-mode# ~local-data-connection-mode
          u# (io/as-url ~url)
          ~client ^FTPClient (open u#)
@@ -75,7 +88,9 @@
              (.login ~client (decode uname#) (decode pass#))))
          (.changeWorkingDirectory ~client (.getPath u#))
          (client-set-file-type ~client file-type#)
-         (.setControlKeepAliveTimeout ~client 300)
+         (.setDataTimeout ~client ~data-timeout-ms)
+         (.setControlKeepAliveTimeout ~client ~control-keep-alive-timeout-sec)
+         (.setControlKeepAliveReplyTimeout ~client ~control-keep-alive-reply-timeout-ms)
          ;; by default (when nil) use passive mode
          (if (= local-mode# :active)
            (.enterLocalActiveMode ~client)

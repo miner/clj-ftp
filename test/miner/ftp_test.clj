@@ -57,7 +57,9 @@
         (client-complete-pending-command client)))))
 
 (deftest get-all
-  (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu"]
+  (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu"
+             :data-timeout-ms 50000, :control-keep-alive-timeout-sec 10
+             :control-keep-alive-reply-timeout-ms 500]
     (is (mapv #(.getName %) (client-FTPFiles client)) (client-all-names client))))
 
 (defn print-FTPFiles-list [label ftpfiles]
@@ -108,7 +110,7 @@
       (is (= guess :binary))
       (client-set-file-type client guess)
       ;;(println "write-file source = " (when source (.getFile source)))
-      (client-put client source dest) 
+      (client-put client source dest)
       (client-get client dest tmp)
       (is (= (fs/size source) (fs/size tmp)))
       ;; test for file corruption that can result from wrong file type
