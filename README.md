@@ -7,15 +7,19 @@ clear so someone could sniff packets on your network and discover
 your password.  Nevertheless, FTP access is useful for dealing with anonymous
 FTP servers and situations where security is not an issue.
 
-## Available on Clojars
+## Leiningen
 
-https://clojars.org/com.velisco/clj-ftp
+Add the dependency to your project.clj:
 
-Leiningen dependencies:
+    [com.velisco/clj-ftp "a.b.c"]
 
-	[com.velisco/clj-ftp "0.3.1"]
-	
-Double check on Clojars in case I forget to update the version number in this document.
+where "a.b.c" is the version number from Clojars.
+
+[![clj-ftp on clojars.org][latest]][clojar]
+
+[latest]: https://clojars.org/com.velisco/clj-ftp/latest-version.svg "clj-ftp on clojars.org"
+[clojar]: https://clojars.org/com.velisco/clj-ftp
+
 
 ## Usage
 
@@ -34,6 +38,10 @@ example:
 
 The default file-type for transfers is :ascii, but you can change it with the option `:file-type
 :binary` in `with-ftp`.  Use `client-set-file-type` to set it appropriately before each transfer.
+
+The other options for `with-ftp` are `:data-timeout-ms` (default infinite),
+`:control-keep-alive-timeout-sec` (default 300),
+`:control-keep-alive-reply-timeout-ms` (default 1000).
 
 ## License
 
