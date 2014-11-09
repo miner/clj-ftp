@@ -9,11 +9,7 @@ FTP servers and situations where security is not an issue.
 
 ## Leiningen
 
-Add the dependency to your project.clj:
-
-    [com.velisco/clj-ftp "a.b.c"]
-
-where "a.b.c" is the version number from Clojars.
+*clj-ftp* is available from Clojars.  Add the following dependency to your *project.clj*:
 
 [![clj-ftp on clojars.org][latest]][clojar]
 
