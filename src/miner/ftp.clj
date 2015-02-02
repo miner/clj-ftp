@@ -21,14 +21,14 @@
 
 (defn open [url]
   (let [url (urly/url-like url)
-        client (case (.getProtocol url)
-                 "ftp" (FTPClient.)
-                 "ftps" (FTPSClient.)
-                 (throw (Exception. (str "unexpected protocol " (.getProtocol url) " in FTP url, need \"ftp\" or \"ftps\""))))]
+        ^FTPClient client (case (.getProtocol url)
+                            "ftp" (FTPClient.)
+                            "ftps" (FTPSClient.)
+                            (throw (Exception. (str "unexpected protocol " (.getProtocol url) " in FTP url, need \"ftp\" or \"ftps\""))))]
     (.connect client
               (.getHost url)
               (if (= -1 (.getPort url))
-                (.getDefaultPort url)
+                21
                 (.getPort url)))
     (let [reply (.getReplyCode client)]
       (if (not (FTPReply/isPositiveCompletion reply))
@@ -53,7 +53,7 @@
      ".mpg" ".mpeg" ".swf" ".wmv" ".ogg") :binary
      :ascii))
 
-(defn client-set-file-type [client filetype]
+(defn client-set-file-type [^FTPClient client filetype]
   "Set the file type for transfers to either :binary or :ascii (the default)"
   (if (= filetype :binary)
     (.setFileType client FTP/BINARY_FILE_TYPE)
@@ -107,28 +107,28 @@
                       (catch IOException e2# nil))))))))
 
 
-(defn client-FTPFiles-all [client]
+(defn client-FTPFiles-all [^FTPClient client]
   (vec (.listFiles client)))
 
-(defn client-FTPFiles [client]
+(defn client-FTPFiles [^FTPClient client]
   (filterv (fn [f] (and f (.isFile ^FTPFile f))) (.listFiles client)))
 
-(defn client-FTPFile-directories [client]
+(defn client-FTPFile-directories [^FTPClient client]
   (vec (.listDirectories client)))
 
-(defn client-all-names [client]
+(defn client-all-names [^FTPClient client]
   (vec (.listNames client)))
 
-(defn client-file-names [client]
+(defn client-file-names [^FTPClient client]
   (mapv #(.getName ^FTPFile %) (client-FTPFiles client)))
 
-(defn client-directory-names [client]
+(defn client-directory-names [^FTPClient client]
   (mapv #(.getName ^FTPFile %) (client-FTPFile-directories client)))
 
 (defn client-complete-pending-command
   "Complete the previous command and check the reply code. Throw an expection if
    reply code is not a positive completion"
-   [client]
+   [^FTPClient client]
   (.completePendingCommand client)
   (let [reply-code (.getReplyCode client)]
      (when-not (FTPReply/isPositiveCompletion reply-code)
@@ -141,23 +141,23 @@
 
   ([client fname local-name]
       (with-open [outstream (java.io.FileOutputStream. (io/as-file local-name))]
-        (.retrieveFile client ^String fname ^java.io.OutputStream outstream))))
+        (.retrieveFile ^FTPClient client ^String fname ^java.io.OutputStream outstream))))
 
 (defn client-get-stream
   "Get a file and return InputStream (must be within a with-ftp). Note that it's necessary to complete
    this command with a call to `client-complete-pending-command` after using the stream."
   [client fname]
-  (.retrieveFileStream client ^String fname))
+  (.retrieveFileStream ^FTPClient client ^String fname))
 
 (defn client-put
   "Put a file (must be within a with-ftp)"
   ([client fname] (client-put client fname (fs/base-name fname)))
 
   ([client fname remote] (with-open [instream (java.io.FileInputStream. (io/as-file fname))]
-                           (.storeFile client ^String remote ^java.io.InputStream instream))))
+                           (.storeFile ^FTPClient client ^String remote ^java.io.InputStream instream))))
 
 (defn client-cd [client dir]
-  (.changeWorkingDirectory client ^String dir))
+  (.changeWorkingDirectory ^FTPClient client ^String dir))
 
 (defn- strip-double-quotes [^String s]
   (let [len (count s)]
@@ -167,10 +167,10 @@
           :else s)))
 
 (defn client-pwd [client]
-  (strip-double-quotes (.printWorkingDirectory client)))
+  (strip-double-quotes (.printWorkingDirectory ^FTPClient client)))
 
 (defn client-mkdir [client subdir]
-  (.makeDirectory client ^String subdir))
+  (.makeDirectory ^FTPClient client ^String subdir))
 
 ;; Regular mkdir can only make one level at a time; mkdirs makes nested paths in the correct order
 (defn client-mkdirs [client subpath]
@@ -179,16 +179,16 @@
 
 (defn client-delete [client fname]
   "Delete a file (must be within a with-ftp)"
-  (.deleteFile client ^String fname))
+  (.deleteFile ^FTPClient client ^String fname))
 
 (defn client-rename [client from to]
   "Rename a remote file (must be within a with-ftp"
-  (.rename client ^String from ^String to))
+  (.rename ^FTPClient client ^String from ^String to))
 
 
 (defn client-send-site-command [client sitecmd ]
    "Send Site Command must be within with-ftp"
-   (.sendSiteCommand client ^String  sitecmd))
+   (.sendSiteCommand ^FTPClient client ^String  sitecmd))
 
 ;; convenience methods for one-shot results
 
