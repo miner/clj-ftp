@@ -13,14 +13,15 @@
 (ns miner.ftp
   (:import [org.apache.commons.net.ftp FTP FTPClient FTPSClient FTPFile FTPReply]
            [java.net URL URLDecoder]
-           [java.io File IOException])
+           [java.io File IOException]
+           [clojurewerkz.urly UrlLike])
   (:require [me.raynes.fs :as fs]
             [clojure.string :as str]
             [clojure.java.io :as io]
             [clojurewerkz.urly.core :as urly]))
 
 (defn open [url]
-  (let [url (urly/url-like url)
+  (let [^UrlLike url (urly/url-like url)
         ^FTPClient client (case (.getProtocol url)
                             "ftp" (FTPClient.)
                             "ftps" (FTPSClient.)
@@ -83,7 +84,7 @@
                        control-keep-alive-reply-timeout-ms 1000}}] & body]
   `(let [local-mode# ~local-data-connection-mode
          u# (urly/url-like ~url)
-         ~client (open u#)
+         ~client ^FTPClient (open u#)
          file-type# ~file-type]
      (when ~client
        (try
