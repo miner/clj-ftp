@@ -1,9 +1,7 @@
 ;; Apache Commons Net API:
-;; http://commons.apache.org/proper/commons-net/javadocs/api-3.1/index.html
+;; http://commons.apache.org/proper/commons-net/javadocs/api-3.3/index.html
 
-;; Uses Apache Commons Net 3.1.  Does not support SFTP.
-;; For some unknown reason Apache Commons Net 3.2 was causing a hang for me when putting files so
-;; we reverted to 3.1 until we can figure out the problem.
+;; Uses Apache Commons Net 3.3.  Does not support SFTP, but does support FTPS.
 
 ;; FTP is considered insecure.  Data and passwords are sent in the
 ;; clear so someone could sniff packets on your network and discover
