@@ -11,20 +11,25 @@
 ;; FTP servers and situations where security is not an issue.
 
 (ns miner.ftp
-  (:import (org.apache.commons.net.ftp FTP FTPClient FTPFile FTPReply)
-           (java.net URL URLDecoder)
-           (java.io File IOException))
+  (:import [org.apache.commons.net.ftp FTP FTPClient FTPSClient FTPFile FTPReply]
+           [java.net URL URLDecoder]
+           [java.io File IOException]
+           [clojurewerkz.urly UrlLike])
   (:require [me.raynes.fs :as fs]
             [clojure.string :as str]
-	    [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojurewerkz.urly.core :as urly]))
 
 (defn open [url]
-  (let [^FTPClient client (FTPClient.)
-        ^URL url (io/as-url url)]
+  (let [^UrlLike url (urly/url-like url)
+        ^FTPClient client (case (.getProtocol url)
+                            "ftp" (FTPClient.)
+                            "ftps" (FTPSClient.)
+                            (throw (Exception. (str "unexpected protocol " (.getProtocol url) " in FTP url, need \"ftp\" or \"ftps\""))))]
     (.connect client
               (.getHost url)
               (if (= -1 (.getPort url))
-                (.getDefaultPort url)
+                21
                 (.getPort url)))
     (let [reply (.getReplyCode client)]
       (if (not (FTPReply/isPositiveCompletion reply))
@@ -78,7 +83,7 @@
                        control-keep-alive-timeout-sec 300
                        control-keep-alive-reply-timeout-ms 1000}}] & body]
   `(let [local-mode# ~local-data-connection-mode
-         u# (io/as-url ~url)
+         u# (urly/url-like ~url)
          ~client ^FTPClient (open u#)
          file-type# ~file-type]
      (when ~client
@@ -150,7 +155,7 @@
   ([client fname] (client-put client fname (fs/base-name fname)))
 
   ([client fname remote] (with-open [instream (java.io.FileInputStream. (io/as-file fname))]
-			   (.storeFile ^FTPClient client ^String remote ^java.io.InputStream instream))))
+                           (.storeFile ^FTPClient client ^String remote ^java.io.InputStream instream))))
 
 (defn client-cd [client dir]
   (.changeWorkingDirectory ^FTPClient client ^String dir))
