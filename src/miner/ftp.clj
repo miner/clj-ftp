@@ -28,9 +28,7 @@
                             (throw (Exception. (str "unexpected protocol " (.getProtocol url) " in FTP url, need \"ftp\" or \"ftps\""))))]
     (.connect client
               (.getHost url)
-              (if (= -1 (.getPort url))
-                21
-                (.getPort url)))
+              (if (= -1 (.getPort url)) (int 21) (.getPort url)))
     (let [reply (.getReplyCode client)]
       (if (not (FTPReply/isPositiveCompletion reply))
         (do (.disconnect client)
