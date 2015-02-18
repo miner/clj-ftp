@@ -91,7 +91,10 @@
          (when-let [user-info# (.getUserInfo u#)]
            (let [[uname# pass#] (.split user-info# ":" 2)]
              (.login ~client (decode uname#) (decode pass#))))
-         (.changeWorkingDirectory ~client (.getPath u#))
+         (let [path# (.getPath u#)]
+           (when (and path#
+                      (not= path# "/"))
+             (.changeWorkingDirectory ~client (subs path# 1))))
          (client-set-file-type ~client file-type#)
          (.setDataTimeout ~client ~data-timeout-ms)
          (.setControlKeepAliveTimeout ~client ~control-keep-alive-timeout-sec)
