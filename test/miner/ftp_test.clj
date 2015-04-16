@@ -94,6 +94,14 @@
       ;;(println "write-file source = " (when source (.getFile source)))
       (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
 
+;; Writable FTP server usage: http://cs.brown.edu/system/ftp.html
+;; OK to upload to incoming, but can't download from there.
+(deftest write-file3
+  (with-ftp [client "ftp://anonymous:brown%40mailinator.com@ftp.cs.brown.edu/incoming"]
+    (let [source (java.io.FileInputStream. (io/file (io/resource "sample.kml")))]
+      ;;(println "write-file source = " (when source (.getFile source)))
+      (client-put-stream client source (str "s" (System/currentTimeMillis) ".kml")))))
+
 (defn sha1 [file-or-url]
   (let [file (io/as-file file-or-url)]
     (if (fs/readable? file)
