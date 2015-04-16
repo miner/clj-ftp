@@ -156,6 +156,11 @@
   ([client fname remote] (with-open [instream (java.io.FileInputStream. (io/as-file fname))]
                            (.storeFile ^FTPClient client ^String remote ^java.io.InputStream instream))))
 
+(defn client-put-stream
+  "Put an InputStream (must be within a with-ftp)"
+  [client instream remote]
+  (.storeFile ^FTPClient client ^String remote ^java.io.InputStream instream))
+
 (defn client-cd [client dir]
   (.changeWorkingDirectory ^FTPClient client ^String dir))
 
