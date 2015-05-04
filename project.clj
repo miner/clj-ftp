@@ -9,7 +9,7 @@
                  [commons-net "3.3"]
                  [clojurewerkz/urly "1.0.0"]]
   :plugins [[codox "0.8.12"]]
-  :codox {:src-dir-uri "http://github.com/clavoie/clj-ftp/tree/master/"
+  :codox {:src-dir-uri "http://github.com/miner/clj-ftp/tree/master/"
           :src-linenum-anchor-prefix "L"}
   :profiles {:test {:resource-paths ["test-resources"]
                     :dependencies [[digest "1.4.4"]]}
