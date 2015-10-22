@@ -169,6 +169,9 @@
    "Send Site Command must be within with-ftp"
    (.sendSiteCommand ^FTPClient client ^String  sitecmd))
 
+
+
+
 ;; convenience methods for one-shot results
 
 (defn rename-file [url from to]
@@ -192,3 +195,12 @@
 (defn list-directories [url]
   (with-ftp [client url]
     (seq (client-directory-names client))))
+;; this method encrypts the channel when you are using ftps.
+;; to avoid error :
+;; 425-Server requires protected data connection.
+;; 425 Can't open data connection.
+;; you must call this before doing a transfer
+
+(defn encrypt-channel [client ]
+  (do  (.execPBSZ  client  0)
+       (.execPROT  client  "P")))
