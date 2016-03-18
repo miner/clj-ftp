@@ -18,12 +18,14 @@
             [clojure.java.io :as io]
             [clojurewerkz.urly.core :as urly]))
 
-(defn open [url]
+(defn open [url control-encoding]
   (let [^UrlLike url (urly/url-like url)
         ^FTPClient client (case (.getProtocol url)
                             "ftp" (FTPClient.)
                             "ftps" (FTPSClient.)
                             (throw (Exception. (str "unexpected protocol " (.getProtocol url) " in FTP url, need \"ftp\" or \"ftps\""))))]
+    ;; (.setAutodetectUTF8 client true)
+    (.setControlEncoding client control-encoding)
     (.connect client
               (.getHost url)
               (if (= -1 (.getPort url)) (int 21) (.getPort url)))
@@ -70,17 +72,20 @@
      - `control-keep-alive-timeout-sec` - control channel keep alive message
        timeout. Default 300 seconds.
      - `control-keep-alive-reply-timeout-ms` - how long to wait for the control
-       channel keep alive replies. Default 1000 ms."
+       channel keep alive replies. Default 1000 ms.
+     - `control-encoding` - The new character encoding for the control connection. Default - UTF-8"
   [[client url & {:keys [local-data-connection-mode file-type
                          data-timeout-ms
                          control-keep-alive-timeout-sec
-                         control-keep-alive-reply-timeout-ms]
+                         control-keep-alive-reply-timeout-ms
+                         control-encoding]
                   :or {data-timeout-ms -1
                        control-keep-alive-timeout-sec 300
-                       control-keep-alive-reply-timeout-ms 1000}}] & body]
+                       control-keep-alive-reply-timeout-ms 1000
+                       control-encoding "UTF-8"}}] & body]
   `(let [local-mode# ~local-data-connection-mode
          u# (urly/url-like ~url)
-         ~client ^FTPClient (open u#)
+         ~client ^FTPClient (open u# ~control-encoding)
          file-type# ~file-type]
      (when ~client
        (try
