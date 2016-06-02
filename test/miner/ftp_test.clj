@@ -3,7 +3,8 @@
         miner.ftp)
   (:require [me.raynes.fs :as fs]
             [digest :as dig]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:import (org.apache.commons.net.ftp FTPFile)))
 
 (deftest listing
   (is (pos? (count (list-files "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs")))))
@@ -17,10 +18,10 @@
 
 (defn get-file-guts [client tmpfile]
   (client-cd client "..")
-  (is (.endsWith (client-pwd client) "gnu"))
+  (is (.endsWith ^String (client-pwd client) "gnu"))
   (is (pos? (count (client-all-names client))))
   (client-cd client "emacs")
-  (is (.endsWith (client-pwd client) "emacs"))
+  (is (.endsWith ^String (client-pwd client) "emacs"))
   (client-get client "README.otherversions" tmpfile)
   (is (fs/exists? tmpfile)))
 
@@ -60,12 +61,12 @@
   (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu"
              :data-timeout-ms 50000, :control-keep-alive-timeout-sec 10
              :control-keep-alive-reply-timeout-ms 500]
-    (is (mapv #(.getName %) (client-FTPFiles client)) (client-all-names client))))
+    (is (mapv #(.getName ^FTPFile %) (client-FTPFiles client)) (client-all-names client))))
 
 (defn print-FTPFiles-list [label ftpfiles]
   (println)
   (println label)
-  (doseq [f ftpfiles]
+  (doseq [^FTPFile f ftpfiles]
     (print (.getName f))
     (when (.isDirectory f) (print "/"))
     (println))

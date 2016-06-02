@@ -18,7 +18,9 @@
             [clojure.java.io :as io]
             [clojurewerkz.urly.core :as urly]))
 
-(defn open [url control-encoding]
+(defn open
+  ([url] (open url "UTF-8"))
+  ([url control-encoding]
   (let [^UrlLike url (urly/url-like url)
         ^FTPClient client (case (.getProtocol url)
                             "ftp" (FTPClient.)
@@ -35,7 +37,7 @@
             ;; should log instead of println
             (println "Connection refused")
             nil)
-        client))))
+        client)))))
 
 (defn decode [url-encoded]
   (if-not url-encoded
@@ -151,7 +153,7 @@
 (defn client-get-stream
   "Get a file and return InputStream (must be within a with-ftp). Note that it's necessary to complete
    this command with a call to `client-complete-pending-command` after using the stream."
-  [client fname]
+  ^java.io.InputStream [client fname]
   (.retrieveFileStream ^FTPClient client ^String fname))
 
 (defn client-put
@@ -226,6 +228,7 @@
 (defn list-directories [url]
   (with-ftp [client url]
     (seq (client-directory-names client))))
+
 ;; this method encrypts the channel when you are using ftps.
 ;; to avoid error :
 ;; 425-Server requires protected data connection.
@@ -233,5 +236,6 @@
 ;; you must call this before doing a transfer
 
 (defn encrypt-channel [client ]
-  (do  (.execPBSZ  client  0)
-       (.execPROT  client  "P")))
+  (do  (.execPBSZ ^FTPSClient client  0)
+       (.execPROT ^FTPSClient client  "P")))
+
