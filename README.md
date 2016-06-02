@@ -37,10 +37,11 @@ The default file-type for transfers is :ascii, but you can change it with the op
 
 The other options for `with-ftp` are `:data-timeout-ms` (default infinite),
 `:control-keep-alive-timeout-sec` (default 300),
-`:control-keep-alive-reply-timeout-ms` (default 1000).
+`:control-keep-alive-reply-timeout-ms` (default 1000)
+`:control-encoding` (default "UTF-8").
 
 ## License
 
-Copyright © 2012-14 Stephen E. Miner
+Copyright © 2012-16 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.
