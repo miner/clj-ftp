@@ -23,12 +23,12 @@ FTP servers and situations where security is not an issue.
 
     (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub"]
 		(ftp/client-get client "interesting.txt" "stuff.txt"))
-		
+
 By default, we use a passive local data connection.  You can override that by passing an option
 after the URL.  Use :local-data-connection-mode :active if you don't want passive mode.  For
 example:
 
-    (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub" 
+    (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub"
 	               :local-data-connection-mode :active]
 		(ftp/client-get client "interesting.txt" "stuff.txt"))
 
@@ -39,8 +39,12 @@ The other options for `with-ftp` are `:data-timeout-ms` (default infinite),
 `:control-keep-alive-timeout-sec` (default 300),
 `:control-keep-alive-reply-timeout-ms` (default 1000).
 
+## Documentation
+
+[API](http://miner.github.io/clj-ftp/)
+
 ## License
 
-Copyright © 2012-14 Stephen E. Miner
+Copyright © 2012-15 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.

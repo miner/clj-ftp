@@ -8,6 +8,9 @@
                  [me.raynes/fs "1.4.6"]
                  [commons-net "3.5"]
                  [clojurewerkz/urly "1.0.0"]]
+  :plugins [[codox "0.8.12"]]
+  :codox {:src-dir-uri "http://github.com/miner/clj-ftp/tree/master/"
+          :src-linenum-anchor-prefix "L"}
   :profiles {:test {:resource-paths ["test-resources"]
                     :dependencies [[digest "1.4.4"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}})
