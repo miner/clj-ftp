@@ -6,7 +6,7 @@
   :min-lein-version "2.0"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [me.raynes/fs "1.4.6"]
-                 [commons-net "3.3"]
+                 [commons-net "3.5"]
                  [clojurewerkz/urly "1.0.0"]]
   :profiles {:test {:resource-paths ["test-resources"]
                     :dependencies [[digest "1.4.4"]]}
