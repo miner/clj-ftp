@@ -35,10 +35,13 @@ example:
 The default file-type for transfers is :ascii, but you can change it with the option `:file-type
 :binary` in `with-ftp`.  Use `client-set-file-type` to set it appropriately before each transfer.
 
-The other options for `with-ftp` are `:data-timeout-ms` (default infinite),
-`:control-keep-alive-timeout-sec` (default 300),
-`:control-keep-alive-reply-timeout-ms` (default 1000)
-`:control-encoding` (default "UTF-8").
+The options for `with-ftp` are:
+- `:data-timeout-ms` (default infinite)
+- `:control-keep-alive-timeout-sec` (default 300)
+- `:control-keep-alive-reply-timeout-ms` (default 1000)
+- `:control-encoding` (default "UTF-8")
+- `:file-type` (default :ascii)
+- `:local-data-connection-mode` (default :passive)
 
 ## License
 
