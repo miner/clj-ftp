@@ -11,17 +11,15 @@
 (ns miner.ftp
   (:import [org.apache.commons.net.ftp FTP FTPClient FTPSClient FTPFile FTPReply]
            [java.net URL URLDecoder]
-           [java.io File IOException]
-           [clojurewerkz.urly UrlLike])
+           [java.io File IOException])
   (:require [me.raynes.fs :as fs]
             [clojure.string :as str]
-            [clojure.java.io :as io]
-            [clojurewerkz.urly.core :as urly]))
+            [clojure.java.io :as io]))
 
 (defn open
   ([url] (open url "UTF-8"))
   ([url control-encoding]
-  (let [^UrlLike url (urly/url-like url)
+  (let [^URL url (io/as-url url)
         ^FTPClient client (case (.getProtocol url)
                             "ftp" (FTPClient.)
                             "ftps" (FTPSClient.)
@@ -86,7 +84,7 @@
                        control-keep-alive-reply-timeout-ms 1000
                        control-encoding "UTF-8"}}] & body]
   `(let [local-mode# ~local-data-connection-mode
-         u# (urly/url-like ~url)
+         u# (io/as-url ~url)
          ~client ^FTPClient (open u# ~control-encoding)
          file-type# ~file-type]
      (when ~client
@@ -95,7 +93,7 @@
            (let [[uname# pass#] (.split user-info# ":" 2)]
              (.login ~client (decode uname#) (decode pass#))))
          (let [path# (.getPath u#)]
-           (when (and path#
+           (when (and (not (str/blank? path#))
                       (not= path# "/"))
              (.changeWorkingDirectory ~client (subs path# 1))))
          (client-set-file-type ~client file-type#)
