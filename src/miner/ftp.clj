@@ -91,7 +91,8 @@
        (try
          (when-let [user-info# (.getUserInfo u#)]
            (let [[uname# pass#] (.split user-info# ":" 2)]
-             (.login ~client (decode uname#) (decode pass#))))
+             (when-not (.login ~client (decode uname#) (decode pass#))
+               (throw (Exception. (format "Unable to login with username: \"%s\"." uname#))))))
          (let [path# (.getPath u#)]
            (when (and (not (str/blank? path#))
                       (not= path# "/"))

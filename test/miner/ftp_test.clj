@@ -103,6 +103,15 @@
       ;;(println "write-file source = " (when source (.getFile source)))
       (client-put-stream client source (str "s" (System/currentTimeMillis) ".kml")))))
 
+(deftest invalid-login-fails
+  (try
+    (with-ftp [client "ftp://wrong-username:wrong-password@ftp.cs.brown.edu/incoming"]
+      ;; try connecting with an invalid pw/username, to trigger the exception
+      )
+    (catch Exception e
+      (is (= "Unable to login with username: \"wrong-username\"."
+             (.getMessage e))))))
+
 (defn sha1 [file-or-url]
   (let [file (io/as-file file-or-url)]
     (if (fs/readable? file)
