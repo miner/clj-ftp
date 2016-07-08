@@ -110,7 +110,8 @@
       )
     (catch Exception e
       (is (= "Unable to login with username: \"wrong-username\"."
-             (.getMessage e))))))
+             (.getMessage e)))
+      (is (= (:invalid-user (ex-data e)) "wrong-username")))))
 
 (defn sha1 [file-or-url]
   (let [file (io/as-file file-or-url)]

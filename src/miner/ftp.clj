@@ -92,10 +92,11 @@
          (when-let [user-info# (.getUserInfo u#)]
            (let [[uname# pass#] (.split user-info# ":" 2)]
              (when-not (.login ~client (decode uname#) (decode pass#))
-               (throw (Exception. (format "Unable to login with username: \"%s\"." uname#))))))
+               (throw (ex-info (format "Unable to login with username: \"%s\"." uname#)
+                               {:url u#
+                                :invalid-user uname#})))))
          (let [path# (.getPath u#)]
-           (when (and (not (str/blank? path#))
-                      (not= path# "/"))
+           (when-not (or (str/blank? path#) (= path# "/"))
              (.changeWorkingDirectory ~client (subs path# 1))))
          (client-set-file-type ~client file-type#)
          (.setDataTimeout ~client ~data-timeout-ms)
