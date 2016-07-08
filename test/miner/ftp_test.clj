@@ -105,11 +105,11 @@
 
 (deftest invalid-login-fails
   (try
-    (with-ftp [client "ftp://wrong-password:wrong-username@ftp.cs.brown.edu/incoming"]
+    (with-ftp [client "ftp://wrong-username:wrong-password@ftp.cs.brown.edu/incoming"]
       ;; try connecting with an invalid pw/username, to trigger the exception
       )
     (catch Exception e
-      (is (= "Unable to login with credentials: \"wrong-password\" , \"wrong-username\"."
+      (is (= "Unable to login with username: \"wrong-username\"."
              (.getMessage e))))))
 
 (defn sha1 [file-or-url]
