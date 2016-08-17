@@ -16,8 +16,8 @@
             [clojure.string :as str]
             [clojure.java.io :as io]))
 
-(defn as-uri [url]
-  (cond (instance? URL url) (.toURI url)
+(defn as-uri ^URI [url]
+  (cond (instance? URL url) (.toURI ^URL url)
         (instance? URI url) url
         :else               (URI. url)))
 
@@ -72,10 +72,10 @@
               (str/replace s
                            #"(%[0-9a-fA-F]{2})+"
                            (fn [[match & _]]
-                             (String. (->> (.split (subs match 1) "%")
-                                           (map #(.byteValue (Integer/decode (str "0x" %))))
-                                           (byte-array))
-                                      control-encoding)))))]
+                             (String. ^bytes (->> (.split (subs match 1) "%")
+                                                  (map #(.byteValue (Integer/decode (str "0x" %))))
+                                                  (byte-array))
+                                      ^String control-encoding)))))]
     (when-let [[encoded-uname encoded-pass] (when-let [ui (.getRawUserInfo (as-uri url))]
                                               (.split ui ":" 2))]
       [(decode encoded-uname) (decode encoded-pass)])))
