@@ -142,3 +142,36 @@
 ;; Another possibility: http://user.agu.org/ishelp/ftp.html
 ;; ftp://ftp.agu.org/incoming/test/
 ;; pub is the only readable dir but you have to know full filename
+
+
+(deftest ftps
+  ;; Per http://www.sftp.net/public-online-sftp-servers, which is apparently
+  ;; maintained by Rebex developers.
+  (is (= ::success
+         (with-ftp [client "ftps://demo:password@test.rebex.net:21"
+                    :data-timeout-ms 10000, :control-keep-alive-timeout-sec 10
+                    :control-keep-alive-reply-timeout-ms 500]
+           ::success))))
+
+
+(deftest user-info-percent-encoding
+  (are [x y] (= x (user-info y "UTF-8"))
+    nil                    "ftp://example.com"
+    ["foo" "bar"]          "ftp://foo:bar@example.com"
+    ["foo" "bar"]          "ftps://foo:bar@example.com"
+
+    ["foo" nil]            "ftp://foo@example.com"
+    ["" "bar"]             "ftp://:bar@example.com"
+
+    ["foo:bar" "baz"]      "ftp://foo%3abar:baz@example.com"
+    ["foo:bar" "baz"]      "ftp://foo%3Abar:baz@example.com"
+    ["foo" "bar:baz"]      "ftp://foo:bar%3abaz@example.com"
+    ["foo" "bar:baz"]      "ftp://foo:bar%3Abaz@example.com"
+
+    ["foo@bar" "baz@quux"] "ftp://foo%40bar:baz%40quux@example.com"
+    ["foo%bar" "baz%quux"] "ftp://foo%25bar:baz%25quux@example.com"
+
+    ["foo++bar" "baz"]     "ftp://foo++bar:baz@example.com"
+    ["foo+++" "baz"]       "ftp://foo+++:baz@example.com"
+
+    ["çåƒé" "ßåßê"]        "ftp://%c3%a7%c3%a5%c6%92%c3%a9:%c3%9f%c3%a5%c3%9f%c3%aa@example.com"))

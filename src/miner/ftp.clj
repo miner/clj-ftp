@@ -10,37 +10,37 @@
 
 (ns miner.ftp
   (:import [org.apache.commons.net.ftp FTP FTPClient FTPSClient FTPFile FTPReply]
-           [java.net URL URLDecoder]
+           [java.net URI URL]
            [java.io File IOException])
   (:require [me.raynes.fs :as fs]
             [clojure.string :as str]
             [clojure.java.io :as io]))
 
+(defn as-uri [url]
+  (cond (instance? URL url) (.toURI url)
+        (instance? URI url) url
+        :else               (URI. url)))
+
 (defn open
   ([url] (open url "UTF-8"))
   ([url control-encoding]
-  (let [^URL url (io/as-url url)
-        ^FTPClient client (case (.getProtocol url)
-                            "ftp" (FTPClient.)
-                            "ftps" (FTPSClient.)
-                            (throw (Exception. (str "unexpected protocol " (.getProtocol url) " in FTP url, need \"ftp\" or \"ftps\""))))]
-    ;; (.setAutodetectUTF8 client true)
-    (.setControlEncoding client control-encoding)
-    (.connect client
-              (.getHost url)
-              (if (= -1 (.getPort url)) (int 21) (.getPort url)))
-    (let [reply (.getReplyCode client)]
-      (if (not (FTPReply/isPositiveCompletion reply))
-        (do (.disconnect client)
-            ;; should log instead of println
-            (println "Connection refused")
-            nil)
-        client)))))
-
-(defn decode [url-encoded]
-  (if-not url-encoded
-    ""
-    (URLDecoder/decode url-encoded "UTF-8")))
+   (let [^URI uri (as-uri url)
+         ^FTPClient client (case (.getScheme uri)
+                             "ftp" (FTPClient.)
+                             "ftps" (FTPSClient.)
+                             (throw (Exception. (str "unexpected protocol " (.getScheme uri) " in FTP url, need \"ftp\" or \"ftps\""))))]
+     ;; (.setAutodetectUTF8 client true)
+     (.setControlEncoding client control-encoding)
+     (.connect client
+               (.getHost uri)
+               (if (= -1 (.getPort uri)) (int 21) (.getPort uri)))
+     (let [reply (.getReplyCode client)]
+       (if (not (FTPReply/isPositiveCompletion reply))
+         (do (.disconnect client)
+             ;; should log instead of println
+             (println "Connection refused")
+             nil)
+         client)))))
 
 (defn guess-file-type [file-name]
   "Best guess about the file type to use when transferring a given file based on the extension.
@@ -58,6 +58,27 @@
     (.setFileType client FTP/BINARY_FILE_TYPE)
     (.setFileType client FTP/ASCII_FILE_TYPE))
   filetype)
+
+(defn user-info
+  "Decode the user info part of a URL to extract the username and password.
+
+  Note that URI#getUserInfo() isn't used because if the result of that method
+  contains more than one ':' character, we can't determine which ':' is the
+  separator.  At the same time, we can't easily use URLDecoder, because it
+  converts '+' into spaces.  So we have to do the percent-decoding ourselves."
+  [url control-encoding]
+  (letfn [(decode [s]
+            (when s
+              (str/replace s
+                           #"(%[0-9a-fA-F]{2})+"
+                           (fn [[match & _]]
+                             (String. (->> (.split (subs match 1) "%")
+                                           (map #(.byteValue (Integer/decode (str "0x" %))))
+                                           (byte-array))
+                                      control-encoding)))))]
+    (when-let [[encoded-uname encoded-pass] (when-let [ui (.getRawUserInfo (as-uri url))]
+                                              (.split ui ":" 2))]
+      [(decode encoded-uname) (decode encoded-pass)])))
 
 
 (defmacro with-ftp
@@ -84,17 +105,16 @@
                        control-keep-alive-reply-timeout-ms 1000
                        control-encoding "UTF-8"}}] & body]
   `(let [local-mode# ~local-data-connection-mode
-         u# (io/as-url ~url)
+         u# (as-uri ~url)
          ~client ^FTPClient (open u# ~control-encoding)
          file-type# ~file-type]
      (when ~client
        (try
-         (when-let [user-info# (.getUserInfo u#)]
-           (let [[uname# pass#] (.split user-info# ":" 2)]
-             (when-not (.login ~client (decode uname#) (decode pass#))
-               (throw (ex-info (format "Unable to login with username: \"%s\"." uname#)
+         (when-let [[uname# pass#] (user-info u# ~control-encoding)]
+           (when-not (.login ~client uname# pass#)
+             (throw (ex-info (format "Unable to login with username: \"%s\"." uname#)
                                {:url u#
-                                :invalid-user uname#})))))
+                                :invalid-user uname#}))))
          (let [path# (.getPath u#)]
            (when-not (or (str/blank? path#) (= path# "/"))
              (.changeWorkingDirectory ~client (subs path# 1))))
