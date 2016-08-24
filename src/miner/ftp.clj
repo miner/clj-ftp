@@ -35,12 +35,11 @@
                (.getHost uri)
                (if (= -1 (.getPort uri)) (int 21) (.getPort uri)))
      (let [reply (.getReplyCode client)]
-       (if (not (FTPReply/isPositiveCompletion reply))
-         (do (.disconnect client)
-             ;; should log instead of println
-             (println "Connection refused")
-             nil)
-         client)))))
+       (when-not (FTPReply/isPositiveCompletion reply)
+         (.disconnect client)
+         (throw (ex-info "Connection failed" {:reply-code   reply
+                                              :reply-string (.getReplyString client)}))))
+     client)))
 
 (defn guess-file-type [file-name]
   "Best guess about the file type to use when transferring a given file based on the extension.
@@ -108,30 +107,29 @@
          u# (as-uri ~url)
          ~client ^FTPClient (open u# ~control-encoding)
          file-type# ~file-type]
-     (when ~client
-       (try
-         (when-let [[uname# pass#] (user-info u# ~control-encoding)]
-           (when-not (.login ~client uname# pass#)
-             (throw (ex-info (format "Unable to login with username: \"%s\"." uname#)
-                               {:url u#
-                                :invalid-user uname#}))))
-         (let [path# (.getPath u#)]
-           (when-not (or (str/blank? path#) (= path# "/"))
-             (.changeWorkingDirectory ~client (subs path# 1))))
-         (client-set-file-type ~client file-type#)
-         (.setDataTimeout ~client ~data-timeout-ms)
-         (.setControlKeepAliveTimeout ~client ~control-keep-alive-timeout-sec)
-         (.setControlKeepAliveReplyTimeout ~client ~control-keep-alive-reply-timeout-ms)
-         ;; by default (when nil) use passive mode
-         (if (= local-mode# :active)
-           (.enterLocalActiveMode ~client)
-           (.enterLocalPassiveMode ~client))
-         ~@body
-         (catch IOException e# (println (.getMessage e#)) (throw e#))
-         (finally (when (.isConnected ~client)
-                    (try
-                      (.disconnect ~client)
-                      (catch IOException e2# nil))))))))
+     (try
+       (when-let [[uname# pass#] (user-info u# ~control-encoding)]
+         (when-not (.login ~client uname# pass#)
+           (throw (ex-info (format "Unable to login with username: \"%s\"." uname#)
+                           {:url u#
+                            :invalid-user uname#}))))
+       (let [path# (.getPath u#)]
+         (when-not (or (str/blank? path#) (= path# "/"))
+           (.changeWorkingDirectory ~client (subs path# 1))))
+       (client-set-file-type ~client file-type#)
+       (.setDataTimeout ~client ~data-timeout-ms)
+       (.setControlKeepAliveTimeout ~client ~control-keep-alive-timeout-sec)
+       (.setControlKeepAliveReplyTimeout ~client ~control-keep-alive-reply-timeout-ms)
+       ;; by default (when nil) use passive mode
+       (if (= local-mode# :active)
+         (.enterLocalActiveMode ~client)
+         (.enterLocalPassiveMode ~client))
+       ~@body
+       (catch IOException e# (println (.getMessage e#)) (throw e#))
+       (finally (when (.isConnected ~client)
+                  (try
+                    (.disconnect ~client)
+                    (catch IOException e2# nil)))))))
 
 
 (defn client-FTPFiles-all [^FTPClient client]
