@@ -21,13 +21,20 @@
         (instance? URI url) url
         :else               (URI. url)))
 
+(defn make-ftps-client [implicit-ftps? trust-manager]
+  (let [client (FTPSClient. implicit-ftps?)]
+    (when trust-manager
+      (.setTrustManager client trust-manager))
+    client))
+
 (defn open
   ([url] (open url "UTF-8"))
-  ([url control-encoding]
+  ([url control-encoding] (open url "UTF-8" false nil))
+  ([url control-encoding implicit-ftps? trust-manager]
    (let [^URI uri (as-uri url)
          ^FTPClient client (case (.getScheme uri)
                              "ftp" (FTPClient.)
-                             "ftps" (FTPSClient.)
+                             "ftps" (make-ftps-client implicit-ftps? trust-manager)
                              (throw (Exception. (str "unexpected protocol " (.getScheme uri) " in FTP url, need \"ftp\" or \"ftps\""))))]
      ;; (.setAutodetectUTF8 client true)
      (.setControlEncoding client control-encoding)
@@ -93,19 +100,25 @@
        timeout. Default 300 seconds.
      - `control-keep-alive-reply-timeout-ms` - how long to wait for the control
        channel keep alive replies. Default 1000 ms.
-     - `control-encoding` - The new character encoding for the control connection. Default - UTF-8"
+     - `control-encoding` - The new character encoding for the control connection. Default - UTF-8
+     - `implicit-ftps?` - Use implicit ftps
+     - `trust-manager` - override default trust manager for ftps"
   [[client url & {:keys [local-data-connection-mode file-type
                          data-timeout-ms
                          control-keep-alive-timeout-sec
                          control-keep-alive-reply-timeout-ms
-                         control-encoding]
+                         control-encoding
+                         implicit-ftps?
+                         trust-manager]
                   :or {data-timeout-ms -1
                        control-keep-alive-timeout-sec 300
                        control-keep-alive-reply-timeout-ms 1000
-                       control-encoding "UTF-8"}}] & body]
+                       control-encoding "UTF-8"
+                       implicit-ftps? false
+                       trust-manager nil}}] & body]
   `(let [local-mode# ~local-data-connection-mode
          u# (as-uri ~url)
-         ~client ^FTPClient (open u# ~control-encoding)
+         ~client ^FTPClient (open u# ~control-encoding ~implicit-ftps? ~trust-manager)
          file-type# ~file-type]
      (try
        (when-let [[uname# pass#] (user-info u# ~control-encoding)]
