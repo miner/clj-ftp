@@ -39,6 +39,10 @@
     (when (fs/exists? tmp2)
       (fs/delete tmp2))))
 
+(deftest set-connect-timeout
+  (let [url "ftp://anonymous@google.com:81"]
+    (is (thrown? java.io.IOException (open url "UTF-8" {:connect-timeout-ms 1})))))
+
 (deftest get-stream-client
   (let [tmp (fs/temp-file "ftp-")]
     (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
