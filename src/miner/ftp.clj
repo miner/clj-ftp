@@ -16,21 +16,34 @@
             [clojure.string :as str]
             [clojure.java.io :as io]))
 
-(defn as-uri ^URI [url]
+(defn as-uri ^java.net.URI [url]
   (cond (instance? URL url) (.toURI ^URL url)
         (instance? URI url) url
         :else               (URI. url)))
 
 (defn open
-  ([url] (open url "UTF-8"))
-  ([url control-encoding]
-   (let [^URI uri (as-uri url)
+  ([url] (open url "UTF-8" {}))
+  ([url control-encoding] (open url control-encoding {}))
+  ([url control-encoding
+    {:keys [data-timeout-ms
+            connect-timeout-ms
+            control-keep-alive-timeout-sec
+            control-keep-alive-reply-timeout-ms]
+     :or {data-timeout-ms -1
+          connect-timeout-ms 30000
+          control-keep-alive-timeout-sec 300
+          control-keep-alive-reply-timeout-ms 1000}}]
+   (let [^java.net.URI uri (as-uri url)
          ^FTPClient client (case (.getScheme uri)
                              "ftp" (FTPClient.)
                              "ftps" (FTPSClient.)
                              (throw (Exception. (str "unexpected protocol " (.getScheme uri) " in FTP url, need \"ftp\" or \"ftps\""))))]
      ;; (.setAutodetectUTF8 client true)
      (.setControlEncoding client control-encoding)
+     (.setConnectTimeout client connect-timeout-ms)
+     (.setDataTimeout client data-timeout-ms)
+     (.setControlKeepAliveTimeout client control-keep-alive-timeout-sec)
+     (.setControlKeepAliveReplyTimeout client control-keep-alive-reply-timeout-ms)
      (.connect client
                (.getHost uri)
                (if (= -1 (.getPort uri)) (int 21) (.getPort uri)))
@@ -88,6 +101,7 @@
    Use [client url :local-data-connection-mode :active :file-type :binary] to override.
 
    Allows to override the following timeouts:
+     - `connect-timeout-ms` - The timeout used when opening a socket. Default 30000
      - `data-timeout-ms` - the underlying socket timeout. Default - infinite (< 1).
      - `control-keep-alive-timeout-sec` - control channel keep alive message
        timeout. Default 300 seconds.
@@ -95,17 +109,12 @@
        channel keep alive replies. Default 1000 ms.
      - `control-encoding` - The new character encoding for the control connection. Default - UTF-8"
   [[client url & {:keys [local-data-connection-mode file-type
-                         data-timeout-ms
-                         control-keep-alive-timeout-sec
-                         control-keep-alive-reply-timeout-ms
                          control-encoding]
-                  :or {data-timeout-ms -1
-                       control-keep-alive-timeout-sec 300
-                       control-keep-alive-reply-timeout-ms 1000
-                       control-encoding "UTF-8"}}] & body]
+                  :as params
+                  :or {control-encoding "UTF-8"}}] & body]
   `(let [local-mode# ~local-data-connection-mode
          u# (as-uri ~url)
-         ~client ^FTPClient (open u# ~control-encoding)
+         ~client ^FTPClient (open u# ~control-encoding ~params)
          file-type# ~file-type]
      (try
        (when-let [[uname# pass#] (user-info u# ~control-encoding)]
@@ -117,9 +126,6 @@
          (when-not (or (str/blank? path#) (= path# "/"))
            (.changeWorkingDirectory ~client (subs path# 1))))
        (client-set-file-type ~client file-type#)
-       (.setDataTimeout ~client ~data-timeout-ms)
-       (.setControlKeepAliveTimeout ~client ~control-keep-alive-timeout-sec)
-       (.setControlKeepAliveReplyTimeout ~client ~control-keep-alive-reply-timeout-ms)
        ;; by default (when nil) use passive mode
        (if (= local-mode# :active)
          (.enterLocalActiveMode ~client)

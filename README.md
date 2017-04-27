@@ -23,12 +23,12 @@ FTP servers and situations where security is not an issue.
 
     (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub"]
 		(ftp/client-get client "interesting.txt" "stuff.txt"))
-		
+
 By default, we use a passive local data connection.  You can override that by passing an option
 after the URL.  Use :local-data-connection-mode :active if you don't want passive mode.  For
 example:
 
-    (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub" 
+    (ftp/with-ftp [client "ftp://anonymous:pwd@ftp.example.com/pub"
 	               :local-data-connection-mode :active]
 		(ftp/client-get client "interesting.txt" "stuff.txt"))
 
@@ -36,6 +36,7 @@ The default file-type for transfers is :ascii, but you can change it with the op
 :binary` in `with-ftp`.  Use `client-set-file-type` to set it appropriately before each transfer.
 
 The options for `with-ftp` are:
+- `:connect-timeout-ms` (default to 30000)
 - `:data-timeout-ms` (default infinite)
 - `:control-keep-alive-timeout-sec` (default 300)
 - `:control-keep-alive-reply-timeout-ms` (default 1000)
