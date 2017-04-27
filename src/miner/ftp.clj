@@ -11,12 +11,12 @@
 (ns miner.ftp
   (:import [org.apache.commons.net.ftp FTP FTPClient FTPSClient FTPFile FTPReply]
            [java.net URI URL]
-           [java.io File IOException])
+           [java.io File IOException FileOutputStream OutputStream FileInputStream InputStream])
   (:require [me.raynes.fs :as fs]
             [clojure.string :as str]
             [clojure.java.io :as io]))
 
-(defn as-uri ^java.net.URI [url]
+(defn as-uri ^URI [url]
   (cond (instance? URL url) (.toURI ^URL url)
         (instance? URI url) url
         :else               (URI. url)))
@@ -33,7 +33,7 @@
           connect-timeout-ms 30000
           control-keep-alive-timeout-sec 300
           control-keep-alive-reply-timeout-ms 1000}}]
-   (let [^java.net.URI uri (as-uri url)
+   (let [^URI uri (as-uri url)
          ^FTPClient client (case (.getScheme uri)
                              "ftp" (FTPClient.)
                              "ftps" (FTPSClient.)
@@ -171,26 +171,26 @@
   ([client fname] (client-get client fname (fs/base-name fname)))
 
   ([client fname local-name]
-      (with-open [outstream (java.io.FileOutputStream. (io/as-file local-name))]
-        (.retrieveFile ^FTPClient client ^String fname ^java.io.OutputStream outstream))))
+      (with-open [outstream (FileOutputStream. (io/as-file local-name))]
+        (.retrieveFile ^FTPClient client ^String fname ^OutputStream outstream))))
 
 (defn client-get-stream
   "Get a file and return InputStream (must be within a with-ftp). Note that it's necessary to complete
    this command with a call to `client-complete-pending-command` after using the stream."
-  ^java.io.InputStream [client fname]
+  ^InputStream [client fname]
   (.retrieveFileStream ^FTPClient client ^String fname))
 
 (defn client-put
   "Put a file (must be within a with-ftp)"
   ([client fname] (client-put client fname (fs/base-name fname)))
 
-  ([client fname remote] (with-open [instream (java.io.FileInputStream. (io/as-file fname))]
-                           (.storeFile ^FTPClient client ^String remote ^java.io.InputStream instream))))
+  ([client fname remote] (with-open [instream (FileInputStream. (io/as-file fname))]
+                           (.storeFile ^FTPClient client ^String remote ^InputStream instream))))
 
 (defn client-put-stream
   "Put an InputStream (must be within a with-ftp)"
   [client instream remote]
-  (.storeFile ^FTPClient client ^String remote ^java.io.InputStream instream))
+  (.storeFile ^FTPClient client ^String remote ^InputStream instream))
 
 (defn client-cd [client dir]
   (.changeWorkingDirectory ^FTPClient client ^String dir))
