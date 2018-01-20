@@ -3,7 +3,8 @@
         miner.ftp)
   (:require [me.raynes.fs :as fs]
             [digest :as dig]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [miner.mock-ftp :as mock-ftp])
   (:import (org.apache.commons.net.ftp FTPFile)))
 
 (deftest listing
@@ -179,3 +180,11 @@
     ["foo+++" "baz"]       "ftp://foo+++:baz@example.com"
 
     ["çåƒé" "ßåßê"]        "ftp://%c3%a7%c3%a5%c6%92%c3%a9:%c3%9f%c3%a5%c3%9f%c3%aa@example.com"))
+
+(deftest default-timeout
+  (let [mock-ftp-port 2021
+        mock-server (mock-ftp/build mock-ftp-port mock-ftp/control-connection-timeout)]
+    (.start mock-server)
+    (with-ftp [client (str "ftp://username:password@localhost:" mock-ftp-port) :default-timeout-ms 200]
+      (is (thrown? java.io.IOException (client-file-names client))))
+    (.stop mock-server)))

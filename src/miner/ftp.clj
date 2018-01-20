@@ -27,6 +27,7 @@
   ([url control-encoding
     {:keys [data-timeout-ms
             connect-timeout-ms
+            default-timeout-ms
             control-keep-alive-timeout-sec
             control-keep-alive-reply-timeout-ms]
      :or {data-timeout-ms -1
@@ -39,6 +40,7 @@
                              "ftps" (FTPSClient.)
                              (throw (Exception. (str "unexpected protocol " (.getScheme uri) " in FTP url, need \"ftp\" or \"ftps\""))))]
      ;; (.setAutodetectUTF8 client true)
+     (when default-timeout-ms (.setDefaultTimeout client default-timeout-ms))
      (.setControlEncoding client control-encoding)
      (.setConnectTimeout client connect-timeout-ms)
      (.setDataTimeout client data-timeout-ms)
