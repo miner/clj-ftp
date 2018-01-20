@@ -8,6 +8,7 @@
                  [me.raynes/fs "1.4.6"]
                  [commons-net "3.6"]]
   :profiles {:test {:resource-paths ["test-resources"]
-                    :dependencies [[digest "1.4.5"]]} })
+                    :dependencies [[org.mockftpserver/MockFtpServer "2.0.2"]
+                                   [digest "1.4.5"]]}})
 
 
