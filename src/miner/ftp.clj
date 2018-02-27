@@ -25,19 +25,22 @@
   ([url] (open url "UTF-8" {}))
   ([url control-encoding] (open url control-encoding {}))
   ([url control-encoding
-    {:keys [data-timeout-ms
+    {:keys [security-mode
+            data-timeout-ms
             connect-timeout-ms
             default-timeout-ms
             control-keep-alive-timeout-sec
             control-keep-alive-reply-timeout-ms]
-     :or {data-timeout-ms -1
+     :or {security-mode :explicit
+          data-timeout-ms -1
           connect-timeout-ms 30000
           control-keep-alive-timeout-sec 300
           control-keep-alive-reply-timeout-ms 1000}}]
-   (let [^URI uri (as-uri url)
+   (let [implicit? (not= :explicit security-mode)
+         ^URI uri (as-uri url)
          ^FTPClient client (case (.getScheme uri)
                              "ftp" (FTPClient.)
-                             "ftps" (FTPSClient.)
+                             "ftps" (FTPSClient. implicit?)
                              (throw (Exception. (str "unexpected protocol " (.getScheme uri) " in FTP url, need \"ftp\" or \"ftps\""))))]
      ;; (.setAutodetectUTF8 client true)
      (when default-timeout-ms (.setDefaultTimeout client default-timeout-ms))
@@ -100,7 +103,9 @@
    access to that client connection.  Closes connection at end of body.  Keyword
    options can follow the url in the binding vector.  By default, uses a passive local data
    connection mode and  ASCII file type.
-   Use [client url :local-data-connection-mode :active :file-type :binary] to override.
+   Use [client url :local-data-connection-mode :active
+                   :file-type :binary
+                   :security-mode :explicit] to override.
 
    Allows to override the following timeouts:
      - `connect-timeout-ms` - The timeout used when opening a socket. Default 30000
