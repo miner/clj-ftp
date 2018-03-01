@@ -44,6 +44,7 @@ The options for `with-ftp` are:
 - `:control-encoding` (default "UTF-8")
 - `:file-type` (default :ascii)
 - `:local-data-connection-mode` (default :passive)
+- `:security-mode` (default :explicit)
 
 ## License
 
