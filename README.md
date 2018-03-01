@@ -48,6 +48,6 @@ The options for `with-ftp` are:
 
 ## License
 
-Copyright © 2012-16 Stephen E. Miner
+Copyright © 2012-18 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.
