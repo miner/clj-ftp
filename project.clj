@@ -9,6 +9,6 @@
                  [commons-net "3.6"]]
   :profiles {:test {:resource-paths ["test-resources"]
                     :dependencies [[org.mockftpserver/MockFtpServer "2.0.2"]
-                                   [digest "1.4.6"]]}})
+                                   [digest "1.4.8"]]}})
 
 
