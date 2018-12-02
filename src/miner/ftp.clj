@@ -164,7 +164,7 @@
   (mapv #(.getName ^FTPFile %) (client-FTPFile-directories client)))
 
 (defn client-complete-pending-command
-  "Complete the previous command and check the reply code. Throw an expection if
+  "Complete the previous command and check the reply code. Throw an exception if
    reply code is not a positive completion"
    [^FTPClient client]
   (.completePendingCommand client)
