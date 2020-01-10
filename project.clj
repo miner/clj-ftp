@@ -9,7 +9,7 @@
                  [commons-net "3.6"]]
   :profiles {:test {:resource-paths ["test-resources"]
                     :dependencies [[org.mockftpserver/MockFtpServer "2.7.1"]
-                                   [org.slf4j/slf4j-jdk14 "1.7.25"]
-                                   [digest "1.4.8"]]}})
+                                   [org.slf4j/slf4j-jdk14 "1.7.30"]
+                                   [digest "1.4.9"]]}})
 
 
