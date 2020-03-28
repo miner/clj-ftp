@@ -217,8 +217,12 @@
 
 ;; Regular mkdir can only make one level at a time; mkdirs makes nested paths in the correct order
 (defn client-mkdirs [client subpath]
-  (doseq [d (reductions (fn [path item] (str path File/separator item))  (fs/split subpath))]
-    (client-mkdir client d)))
+  (let [norm-path (-> subpath
+                      (str/replace #"\\" "/")
+                      (str/split #"/")
+                      (#(if (str/blank? (first %)) (cons "/" (rest %)) %)))]
+    (doseq [d (reductions (fn [path item] (str path "/" item)) norm-path)]
+      (client-mkdir client d))))
 
 (defn client-delete [client fname]
   "Delete a file (must be within a with-ftp)"
