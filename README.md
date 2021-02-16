@@ -55,3 +55,6 @@ The options for `with-ftp` are:
 Copyright © 2012-21 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.
+
+[![clj-ftp](https://img.shields.io/clojars/v/com.velisco/clj-ftp.svg)](https://clojars.org/com.velisco/clj-ftp)
+
