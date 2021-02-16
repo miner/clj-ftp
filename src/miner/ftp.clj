@@ -25,13 +25,15 @@
   ([url] (open url "UTF-8" {}))
   ([url control-encoding] (open url control-encoding {}))
   ([url control-encoding
-    {:keys [security-mode
+    {:keys [strict-reply-parsing
+            security-mode
             data-timeout-ms
             connect-timeout-ms
             default-timeout-ms
             control-keep-alive-timeout-sec
             control-keep-alive-reply-timeout-ms]
-     :or {security-mode :explicit
+     :or {strict-reply-parsing true
+          security-mode :explicit
           data-timeout-ms -1
           connect-timeout-ms 30000
           control-keep-alive-timeout-sec 300
@@ -44,6 +46,7 @@
                              (throw (Exception. (str "unexpected protocol " (.getScheme uri) " in FTP url, need \"ftp\" or \"ftps\""))))]
      ;; (.setAutodetectUTF8 client true)
      (when default-timeout-ms (.setDefaultTimeout client default-timeout-ms))
+     (.setStrictReplyParsing client strict-reply-parsing)
      (.setControlEncoding client control-encoding)
      (.setConnectTimeout client connect-timeout-ms)
      (.setDataTimeout client data-timeout-ms)
