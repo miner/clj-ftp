@@ -1,6 +1,8 @@
 # clj-ftp
 
-Wrapper over Apache Commons Net to provide easy access from Clojure.
+Wrapper over [Apache Commons Net][apache] to provide easy access from Clojure.
+
+[apache]: https://commons.apache.org/proper/commons-net/ "Apache Commons Net"
 
 Note: FTP is considered insecure.  Data and passwords are sent in the
 clear so someone could sniff packets on your network and discover
@@ -45,9 +47,11 @@ The options for `with-ftp` are:
 - `:file-type` (default :ascii)
 - `:local-data-connection-mode` (default :passive)
 - `:security-mode` (default :explicit)
+- `:strict-parsing-mode` (default: true)
+
 
 ## License
 
-Copyright © 2012-18 Stephen E. Miner
+Copyright © 2012-21 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.
