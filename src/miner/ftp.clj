@@ -134,7 +134,7 @@
                             :invalid-user uname#}))))
        (let [path# (.getPath u#)]
          (when-not (or (str/blank? path#) (= path# "/"))
-           (.changeWorkingDirectory ~client (subs path# 1))))
+           (assert (.changeWorkingDirectory ~client (subs path# 1)) "Unable to cwd")))
        (client-set-file-type ~client file-type#)
        ;; by default (when nil) use passive mode
        (if (= local-mode# :active)
