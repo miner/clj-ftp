@@ -118,6 +118,16 @@
              (.getMessage e)))
       (is (= (:invalid-user (ex-data e)) "wrong-username")))))
 
+(deftest invalid-path-fails
+  (try
+    (with-ftp [client "ftp://anonymous:brown%40mailinator.com@ftp.cs.brown.edu/MISSING"]
+      ;; try connecting with an invalid path, to trigger the exception
+      )
+    (catch Exception e
+      (is (= "Unable to change working directory to \"/MISSING\"."
+             (.getMessage e)))
+      (is (= (:invalid-path (ex-data e)) "/MISSING")))))
+
 (defn sha1 [file-or-url]
   (let [file (io/as-file file-or-url)]
     (if (fs/readable? file)

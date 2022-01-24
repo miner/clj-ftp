@@ -134,7 +134,11 @@
                             :invalid-user uname#}))))
        (let [path# (.getPath u#)]
          (when-not (or (str/blank? path#) (= path# "/"))
-           (.changeWorkingDirectory ~client (subs path# 1))))
+           (when-not (.changeWorkingDirectory ~client (subs path# 1))
+             (throw (ex-info (format "Unable to change working directory to \"%s\"."
+                                     path#)
+                             {:url u#
+                              :invalid-path path#})))))
        (client-set-file-type ~client file-type#)
        ;; by default (when nil) use passive mode
        (if (= local-mode# :active)
