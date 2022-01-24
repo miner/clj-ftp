@@ -6,10 +6,10 @@
   :min-lein-version "2.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [me.raynes/fs "1.4.6"]
-                 [commons-net "3.7.2"]]
+                 [commons-net "3.8.0"]]
   :profiles {:test {:resource-paths ["test-resources"]
-                    :dependencies [[org.mockftpserver/MockFtpServer "2.7.1"]
-                                   [org.slf4j/slf4j-jdk14 "1.7.30"]
+                    :dependencies [[org.mockftpserver/MockFtpServer "3.0.0"]
+                                   [org.slf4j/slf4j-jdk14 "1.7.33"]
                                    [digest "1.4.10"]]}})
 
 
