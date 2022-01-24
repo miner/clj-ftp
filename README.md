@@ -52,7 +52,7 @@ The options for `with-ftp` are:
 
 ## License
 
-Copyright © 2012-21 Stephen E. Miner
+Copyright © 2012-22 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
