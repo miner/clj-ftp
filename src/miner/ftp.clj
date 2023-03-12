@@ -100,6 +100,11 @@
                                               (.split ui ":" 2))]
       [(decode encoded-uname) (decode encoded-pass)])))
 
+(defn login* [^FTPClient client url username password]
+  (when-not (.login client username password)
+    (throw (ex-info (format "Unable to login with username: \"%s\"." username)
+                    {:url          url
+                     :invalid-user username}))))
 
 (defmacro with-ftp
   "Establish an FTP connection, bound to client, for the FTP url, and execute the body with
@@ -117,9 +122,12 @@
        timeout. Default 300 seconds.
      - `control-keep-alive-reply-timeout-ms` - how long to wait for the control
        channel keep alive replies. Default 1000 ms.
-     - `control-encoding` - The new character encoding for the control connection. Default - UTF-8"
+     - `control-encoding` - The new character encoding for the control connection. Default - UTF-8
+     - `username` - FTP username (if not supplying credentials via the URL)
+     - `password` - FTP password (if not supplying credentials via the URL)"
   [[client url & {:keys [local-data-connection-mode file-type
-                         control-encoding]
+                         control-encoding
+                         username password]
                   :as params
                   :or {control-encoding "UTF-8"}}] & body]
   `(let [local-mode# ~local-data-connection-mode
@@ -127,11 +135,9 @@
          ~client ^FTPClient (open u# ~control-encoding ~params)
          file-type# ~file-type]
      (try
-       (when-let [[uname# pass#] (user-info u# ~control-encoding)]
-         (when-not (.login ~client uname# pass#)
-           (throw (ex-info (format "Unable to login with username: \"%s\"." uname#)
-                           {:url u#
-                            :invalid-user uname#}))))
+       (if-let [[uname# pass#] (user-info u# ~control-encoding)]
+         (login* ~client u# uname# pass#)                    ;; URL embedded credentials
+         (login* ~client u# ~username ~password))            ;; Explicit credentials via params
        (let [path# (.getPath u#)]
          (when-not (or (str/blank? path#) (= path# "/"))
            (when-not (.changeWorkingDirectory ~client (subs path# 1))

@@ -12,13 +12,17 @@
           (while true
             (Thread/sleep 60000))))))
 
-(defn build ^FakeFtpServer [control-port handler]
-  (let [mock-server (new FakeFtpServer)
-        filesystem (new UnixFakeFileSystem)]
-    (.addUserAccount mock-server (new UserAccount "username" "password" "/home/username"))
-    (.add filesystem (new DirectoryEntry "/home/username"))
-    (.setFileSystem mock-server filesystem)
+(defn build ^FakeFtpServer
+  ([control-port]
+   (build control-port nil))
+  ([control-port handler]
+   (let [mock-server (new FakeFtpServer)
+         filesystem (new UnixFakeFileSystem)]
+     (.addUserAccount mock-server (new UserAccount "username" "password" "/home/username"))
+     (.add filesystem (new DirectoryEntry "/home/username"))
+     (.setFileSystem mock-server filesystem)
 
-    (.setServerControlPort mock-server control-port)
-    (.setCommandHandler mock-server CommandNames/PASV handler)
-    mock-server))
+     (.setServerControlPort mock-server control-port)
+     (when handler
+       (.setCommandHandler mock-server CommandNames/PASV handler))
+     mock-server)))
