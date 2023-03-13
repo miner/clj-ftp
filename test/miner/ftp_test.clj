@@ -204,3 +204,19 @@
     (with-ftp [client (str "ftp://username:password@localhost:" mock-ftp-port) :default-timeout-ms 200]
       (is (thrown? java.io.IOException (client-file-names client))))
     (.stop mock-server)))
+
+(deftest explicit-user-credentials
+  (let [mock-ftp-port 2021
+        mock-server (mock-ftp/build mock-ftp-port)]
+    (.start mock-server)
+    (with-ftp [client (str "ftp://localhost:" mock-ftp-port) :username "username" :password "password"]
+      (is (empty? (client-file-names client))))
+    (.stop mock-server)))
+
+(deftest url-user-credentials
+  (let [mock-ftp-port 2021
+        mock-server (mock-ftp/build mock-ftp-port)]
+    (.start mock-server)
+    (with-ftp [client (str "ftp://username:password@localhost:" mock-ftp-port)]
+      (is (empty? (client-file-names client))))
+    (.stop mock-server)))
