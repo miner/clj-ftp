@@ -1,7 +1,7 @@
 ;; Apache Commons Net API:
-;; http://commons.apache.org/proper/commons-net/javadocs/api-3.3/index.html
+;; https://commons.apache.org/proper/commons-net/apidocs/index.html
 
-;; Uses Apache Commons Net 3.3.  Does not support SFTP, but does support FTPS.
+;; Uses Apache Commons Net 3.9.  Does not support SFTP, but does support FTPS.
 
 ;; FTP is considered insecure.  Data and passwords are sent in the
 ;; clear so someone could sniff packets on your network and discover
@@ -49,9 +49,9 @@
      (.setStrictReplyParsing client strict-reply-parsing)
      (.setControlEncoding client control-encoding)
      (.setConnectTimeout client connect-timeout-ms)
-     (.setDataTimeout client data-timeout-ms)
-     (.setControlKeepAliveTimeout client control-keep-alive-timeout-sec)
-     (.setControlKeepAliveReplyTimeout client control-keep-alive-reply-timeout-ms)
+     (.setDataTimeout client ^int data-timeout-ms)
+     (.setControlKeepAliveTimeout client ^int control-keep-alive-timeout-sec)
+     (.setControlKeepAliveReplyTimeout client ^int control-keep-alive-reply-timeout-ms)
      (.connect client
                (.getHost uri)
                (if (= -1 (.getPort uri)) (int 21) (.getPort uri)))
