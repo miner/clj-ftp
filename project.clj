@@ -12,4 +12,3 @@
                                    [org.slf4j/slf4j-jdk14 "2.0.6"]
                                    [digest "1.4.10"]]}})
 
-
