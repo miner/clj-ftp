@@ -1,4 +1,4 @@
-(defproject com.velisco/clj-ftp "1.0.0"
+(defproject com.velisco/clj-ftp "1.1.0"
   :description "Clojure wrapper on Apache Commons Net for FTP"
   :url "http://github.com/miner/clj-ftp"
   :license {:name "Eclipse Public License"
