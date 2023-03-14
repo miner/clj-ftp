@@ -48,6 +48,22 @@ The options for `with-ftp` are:
 - `:local-data-connection-mode` (default :passive)
 - `:security-mode` (default :explicit)
 - `:strict-parsing-mode` (default: true)
+- `:username` (plain string without percent encoding)
+- `:password` (plain string without percent encoding)
+
+
+Note: when `:username` and `:password` are specified as options, the URL should not have
+those values embedded.  Also, the given values are plain text and should not use percent
+encoding for special characters as required with the URL value.  The following two examples
+are equivalent:
+
+    (ftp/with-ftp [client "ftp://foo:%23%20pwd%21@ftp.example.com/pub"]
+		(ftp/client-get client "interesting.txt" "stuff.txt"))
+
+    (ftp/with-ftp [client "ftp://ftp.example.com/pub"
+	               :username "foo"
+				   :password "# pwd!"]
+		(ftp/client-get client "interesting.txt" "stuff.txt"))
 
 
 ## License
