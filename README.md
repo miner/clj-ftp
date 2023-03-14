@@ -68,7 +68,7 @@ are equivalent:
 
 ## License
 
-Copyright © 2012-22 Stephen E. Miner
+Copyright © 2012-23 Stephen E. Miner
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
