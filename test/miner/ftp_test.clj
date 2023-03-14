@@ -85,25 +85,19 @@
 )
 
 ;; Writable FTP server usage: http://www.swfwmd.state.fl.us/data/ftp/
-;; Server is down so tests have to be disabled
-#_ (deftest write-file
+
+(deftest write-file
   (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"]
     (let [source (.getFile (io/resource "sample.kml"))]
       ;;(println "write-file source = " (when source (.getFile source)))
       (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
 
-;; Writable FTP server usage: http://cs.brown.edu/system/ftp.html
-;; OK to upload to incoming, but can't download from there.
-(deftest write-file2
-  (with-ftp [client "ftp://anonymous:brown%40mailinator.com@ftp.cs.brown.edu/incoming"]
-    (let [source (.getFile (io/resource "sample.kml"))]
-      ;;(println "write-file source = " (when source (.getFile source)))
-      (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
+;; FTP server usage: http://cs.brown.edu/system/ftp.html
+;; But doesn't seem to work anymore.
+;; Switch to DLPTest which allows writes. See https://dlptest.com/ftp-test/
 
-;; Writable FTP server usage: http://cs.brown.edu/system/ftp.html
-;; OK to upload to incoming, but can't download from there.
-(deftest write-file3
-  (with-ftp [client "ftp://anonymous:brown%40mailinator.com@ftp.cs.brown.edu/incoming"]
+(deftest write-file2
+  (with-ftp [client "ftp://dlpuser:rNrKYTX9g7z3RgJRmxWuGHbeu@ftp.dlptest.com/"]
     (let [source (java.io.FileInputStream. (io/file (io/resource "sample.kml")))]
       ;;(println "write-file source = " (when source (.getFile source)))
       (client-put-stream client source (str "s" (System/currentTimeMillis) ".kml")))))
@@ -140,8 +134,10 @@
       (dig/sha-1 file)
       (throw (ex-info (str "Unreadable file " (pr-str file-or-url)) {:file file-or-url})))))
 
-#_ (deftest write-file-binary
-  (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"
+;;; failing write "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"
+;;; switch to DLPTest.com
+(deftest write-file-binary
+  (with-ftp [client "ftp://dlpuser:rNrKYTX9g7z3RgJRmxWuGHbeu@ftp.dlptest.com/"
              :file-type :binary]
     (let [source (io/resource "spacer.jpg")
           dest (str "sp" (System/currentTimeMillis) ".jpg")
@@ -149,7 +145,9 @@
           guess (guess-file-type source)]
       (is (= guess :binary))
       (client-set-file-type client guess)
-      ;;(println "write-file source = " (when source (.getFile source)))
+      ;; (println "write-file-binary source = " (when source (.getFile source)))
+      ;; (println "write-file-binray source = " dest)
+      ;; (println "write-file-binary tmp = " (str tmp))
       (client-put client source dest)
       (client-get client dest tmp)
       (is (= (fs/size source) (fs/size tmp)))
