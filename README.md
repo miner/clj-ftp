@@ -62,7 +62,7 @@ are equivalent:
 
     (ftp/with-ftp [client "ftp://ftp.example.com/pub"
 	               :username "foo"
-				   :password "# pwd!"]
+                   :password "# pwd!"]
 		(ftp/client-get client "interesting.txt" "stuff.txt"))
 
 
