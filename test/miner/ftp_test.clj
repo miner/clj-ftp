@@ -7,6 +7,11 @@
             [miner.mock-ftp :as mock-ftp])
   (:import (org.apache.commons.net.ftp FTPFile)))
 
+;;; Note to future testers:  many of these tests are using public FTP servers that were
+;;; documented to be available at the time these tests were written.  However, there's no
+;;; guarantee that they will continue to be in service and publicly open.  If tests fail, we
+;;; may have to try a different server or just temporarily disable the test.
+
 (deftest listing
   (is (pos? (count (list-files "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs")))))
 
@@ -118,9 +123,12 @@
              (.getMessage e)))
       (is (= (:invalid-user (ex-data e)) "BADdlpuser")))))
 
+;; failing probably due to overuse
+;; "ftp://anonymous:brown%40mailinator.com@ftp.cs.brown.edu/MISSING"
+
 (deftest invalid-path-fails
   (try
-    (with-ftp [client "ftp://anonymous:brown%40mailinator.com@ftp.cs.brown.edu/MISSING"]
+    (with-ftp [client "ftp://dlpuser:rNrKYTX9g7z3RgJRmxWuGHbeu@ftp.dlptest.com/MISSING"]
       ;; try connecting with an invalid path, to trigger the exception
       )
     (catch Exception e
@@ -195,11 +203,17 @@
 
     ["çåƒé" "ßåßê"]        "ftp://%c3%a7%c3%a5%c6%92%c3%a9:%c3%9f%c3%a5%c3%9f%c3%aa@example.com"))
 
+
+;; Note that the mock account password is "#password".  The first character is the "hash"
+;; character (a.k.a. number sign or octothorp), which requires percent encoding in URLs.
+;; The equivalent is "%23".
+;; https://www.w3schools.com/tags/ref_urlencode.ASP
+
 (deftest default-timeout
   (let [mock-ftp-port 2021
         mock-server (mock-ftp/build mock-ftp-port mock-ftp/control-connection-timeout)]
     (.start mock-server)
-    (with-ftp [client (str "ftp://username:password@localhost:" mock-ftp-port) :default-timeout-ms 200]
+    (with-ftp [client (str "ftp://username:%23password@localhost:" mock-ftp-port) :default-timeout-ms 200]
       (is (thrown? java.io.IOException (client-file-names client))))
     (.stop mock-server)))
 
@@ -207,7 +221,7 @@
   (let [mock-ftp-port 2021
         mock-server (mock-ftp/build mock-ftp-port)]
     (.start mock-server)
-    (with-ftp [client (str "ftp://localhost:" mock-ftp-port) :username "username" :password "password"]
+    (with-ftp [client (str "ftp://localhost:" mock-ftp-port) :username "username" :password "#password"]
       (is (empty? (client-file-names client))))
     (.stop mock-server)))
 
@@ -215,6 +229,6 @@
   (let [mock-ftp-port 2021
         mock-server (mock-ftp/build mock-ftp-port)]
     (.start mock-server)
-    (with-ftp [client (str "ftp://username:password@localhost:" mock-ftp-port)]
+    (with-ftp [client (str "ftp://username:%23password@localhost:" mock-ftp-port)]
       (is (empty? (client-file-names client))))
     (.stop mock-server)))

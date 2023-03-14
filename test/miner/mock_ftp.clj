@@ -12,16 +12,21 @@
           (while true
             (Thread/sleep 60000))))))
 
+
+;; Note that the mock account password is "#password".  The first character is the "hash"
+;; character (a.k.a. number sign or octothorp), which requires percent encoding in URLs.
+;; The equivalent is "%23".
+;; https://www.w3schools.com/tags/ref_urlencode.ASP
+
 (defn build 
   (^FakeFtpServer [control-port]
    (build control-port nil))
   (^FakeFtpServer [control-port handler]
    (let [mock-server (new FakeFtpServer)
          filesystem (new UnixFakeFileSystem)]
-     (.addUserAccount mock-server (new UserAccount "username" "password" "/home/username"))
+     (.addUserAccount mock-server (new UserAccount "username" "#password" "/home/username"))
      (.add filesystem (new DirectoryEntry "/home/username"))
      (.setFileSystem mock-server filesystem)
-
      (.setServerControlPort mock-server control-port)
      (when handler
        (.setCommandHandler mock-server CommandNames/PASV handler))
