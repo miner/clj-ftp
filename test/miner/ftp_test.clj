@@ -12,29 +12,35 @@
 ;;; guarantee that they will continue to be in service and publicly open.  If tests fail, we
 ;;; may have to try a different server or just temporarily disable the test.
 
+(def test-ftp-url
+  "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/gisdata")
+
+(def test-ftp-writeable-url
+  "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming")
+
 (deftest listing
-  (is (pos? (count (list-files "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs")))))
+  (is (pos? (count (list-files test-ftp-url)))))
 
 (deftest retrieve-file-one-shot
   (let [tmp (fs/temp-file "ftp-")]
-    (retrieve-file "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs" "README.otherversions" tmp)
+    (retrieve-file test-ftp-url "message" tmp)
     (is (fs/exists? tmp))
     (when (fs/exists? tmp)
       (fs/delete tmp))))
 
 (defn get-file-guts [client tmpfile]
   (client-cd client "..")
-  (is (.endsWith ^String (client-pwd client) "gnu"))
+  (is (.endsWith ^String (client-pwd client) "pub"))
   (is (pos? (count (client-all-names client))))
-  (client-cd client "emacs")
-  (is (.endsWith ^String (client-pwd client) "emacs"))
-  (client-get client "README.otherversions" tmpfile)
+  (client-cd client "gisdata")
+  (is (.endsWith ^String (client-pwd client) "data"))
+  (client-get client "message" tmpfile)
   (is (fs/exists? tmpfile)))
 
 (deftest get-file-client
   (let [tmp (fs/temp-file "ftp-")
         tmp2 (fs/temp-file "ftp-")
-        url "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
+        url test-ftp-url]
     (with-ftp [client url]
       (get-file-guts client tmp))
     (with-ftp [client2 url :local-data-connection-mode :active]
@@ -51,24 +57,24 @@
 
 (deftest get-stream-client
   (let [tmp (fs/temp-file "ftp-")]
-    (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
+    (with-ftp [client test-ftp-url]
       (is (instance? java.io.InputStream
-                     (client-get-stream client "README.olderversions"))))))
+                     (client-get-stream client "message"))))))
 
 (deftest get-stream-client-two-files
   (let [tmp (fs/temp-file "ftp-")]
-    (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu/emacs"]
-      (with-open [s1 (client-get-stream client "README.olderversions")]
+    (with-ftp [client test-ftp-url]
+      (with-open [s1 (client-get-stream client "message")]
         (is (instance? java.io.InputStream s1))
         (io/copy s1 tmp)
         (client-complete-pending-command client))
-      (with-open [s2 (client-get-stream client "README.olderversions")]
+      (with-open [s2 (client-get-stream client "message")]
         (is (instance? java.io.InputStream s2))
         (io/copy s2 tmp)
         (client-complete-pending-command client)))))
 
 (deftest get-all
-  (with-ftp [client "ftp://anonymous:user%40example.com@ftp.gnu.org/gnu"
+  (with-ftp [client test-ftp-url
              :data-timeout-ms 50000, :control-keep-alive-timeout-sec 10
              :control-keep-alive-reply-timeout-ms 500]
     (is (mapv #(.getName ^FTPFile %) (client-FTPFiles client)) (client-all-names client))))
@@ -92,7 +98,7 @@
 ;; Writable FTP server usage: http://www.swfwmd.state.fl.us/data/ftp/
 
 (deftest write-file
-  (with-ftp [client "ftp://anonymous:joe%40mailinator.com@ftp.swfwmd.state.fl.us/pub/incoming"]
+  (with-ftp [client test-ftp-writeable-url]
     (let [source (.getFile (io/resource "sample.kml"))]
       ;;(println "write-file source = " (when source (.getFile source)))
       (client-put client source (str "s" (System/currentTimeMillis) ".kml")))))
