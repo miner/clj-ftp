@@ -151,11 +151,10 @@
          (.enterLocalActiveMode ~client)
          (.enterLocalPassiveMode ~client))
        ~@body
-       (catch IOException e# (println (.getMessage e#)) (throw e#))
        (finally (when (.isConnected ~client)
                   (try
                     (.disconnect ~client)
-                    (catch IOException e2# nil)))))))
+                    (catch IOException e# nil)))))))
 
 
 (defn client-FTPFiles-all [^FTPClient client]
@@ -245,9 +244,6 @@
 (defn client-send-site-command [client sitecmd ]
    "Send Site Command must be within with-ftp"
    (.sendSiteCommand ^FTPClient client ^String  sitecmd))
-
-
-
 
 ;; convenience methods for one-shot results
 
